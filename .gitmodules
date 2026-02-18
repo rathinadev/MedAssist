@@ -1,0 +1,9 @@
+[submodule "backend"]
+	path = backend
+	url = https://github.com/santoshi004/Backend
+[submodule "frontend"]
+	path = frontend
+	url = https://github.com/ramyaS1205/Front-end
+[submodule "mobile-app"]
+	path = mobile-app
+	url = https://github.com/Savita-debug/mobile-app.git
