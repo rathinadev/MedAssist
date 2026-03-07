@@ -11,214 +11,108 @@ graph TD
         Web[Web Frontend]
     end
     
-    subgraph Django["Django Backend"]
-        subgraph API["API Layer"]
-            Auth[Auth Endpoints]
-            Patients[Patient Endpoints]
-            Medications[Medication Endpoints]
-            Adherence[Adherence Endpoints]
-            Predictions[Prediction Endpoints]
-            Prescriptions[Prescription OCR]
-        end
-        
-        subgraph Business["Business Logic"]
-            JWT[JWT Auth]
-            Perms[Permissions]
-            Serializers[DRF Serializers]
-        end
-        
-        subgraph Services["Services"]
-            ML[ML Prediction]
-            OCR[Azure OCR]
-        end
-        
+    subgraph Backend
+        API[REST API]
+        Auth[JWT Auth]
+        Perms[Permissions]
+        Serializers[DRF Serializers]
+        ML[ML Prediction]
+        OCR[Azure OCR]
         DB[(PostgreSQL)]
     end
     
     Mobile --> API
     Web --> API
-    API --> Business
-    Business --> Serializers
+    API --> Auth
+    API --> Perms
+    API --> Serializers
     Serializers --> DB
-    Business --> Perms
-    Business --> JWT
-    Predictions --> ML
-    Prescriptions --> OCR
-```
-Clients: Mobile App, Web Frontend
-    │
-    ▼
-┌─────────────────────────────────────────┐
-│           Django Backend                │
-│  ┌─────────────────────────────────┐   │
-│  │      API Endpoints              │   │
-│  │  - Auth (login, register)       │   │
-│  │  - Patients                     │   │
-│  │  - Medications                  │   │
-│  │  - Adherence                    │   │
-│  │  - Predictions                 │   │
-│  │  - Prescriptions (OCR)          │   │
-│  └─────────────────────────────────┘   │
-│                  │                      │
-│  ┌─────────────────────────────────┐   │
-│  │  Business Logic                 │   │
-│  │  - JWT Authentication           │   │
-│  │  - Permission Classes           │   │
-│  │  - DRF Serializers             │   │
-│  └─────────────────────────────────┘   │
-│                  │                      │
-│  ┌─────────────────────────────────┐   │
-│  │  Services                       │   │
-│  │  - ML Prediction (RandomForest)│   │
-│  │  - OCR (Azure Form Recognizer) │   │
-│  └─────────────────────────────────┘   │
-│                  │                      │
-└───────────────────▼──────────────────────
-              PostgreSQL
+    API --> ML
+    API --> OCR
 ```
 
 ## Data Models
 
 ### User
-| Field | Type | Description |
-|-------|------|-------------|
-| id | int | Primary key |
-| email | string | Unique email |
-| name | string | User name |
-| phone | string | Phone number |
-| role | string | caretaker/patient |
-| is_active | bool | Account active |
-| created_at | datetime | Creation date |
+- id (int, PK)
+- email (string, unique)
+- name (string)
+- phone (string)
+- role (caretaker/patient)
+- is_active (bool)
+- created_at (datetime)
 
 ### PatientProfile
-| Field | Type | Description |
-|-------|------|-------------|
-| id | int | Primary key |
-| user_id | int | FK to User (unique) |
-| caretaker_id | int | FK to User |
-| age | int | Patient age |
-| medical_conditions | string | Medical conditions |
-| created_at | datetime | Creation date |
+- id (int, PK)
+- user_id (int, FK to User)
+- caretaker_id (int, FK to User)
+- age (int)
+- medical_conditions (string)
+- created_at (datetime)
 
 ### Medication
-| Field | Type | Description |
-|-------|------|-------------|
-| id | int | Primary key |
-| name | string | Medication name |
-| dosage | string | Dosage amount |
-| frequency | string | How often |
-| timings | json | Time list |
-| instructions | string | Instructions |
-| patient_id | int | FK to User |
-| created_by_id | int | FK to User |
-| is_active | bool | Is active |
-| created_at | datetime | Creation date |
+- id (int, PK)
+- name (string)
+- dosage (string)
+- frequency (string)
+- timings (JSON)
+- instructions (string)
+- patient_id (int, FK to User)
+- created_by_id (int, FK to User)
+- is_active (bool)
+- created_at (datetime)
 
 ### AdherenceLog
-| Field | Type | Description |
-|-------|------|-------------|
-| id | int | Primary key |
-| medication_id | int | FK to Medication |
-| patient_id | int | FK to User |
-| scheduled_time | datetime | When scheduled |
-| taken_time | datetime | When taken (nullable) |
-| status | string | taken/missed/late |
-| created_at | datetime | Creation date |
+- id (int, PK)
+- medication_id (int, FK to Medication)
+- patient_id (int, FK to User)
+- scheduled_time (datetime)
+- taken_time (datetime, nullable)
+- status (taken/missed/late)
+- created_at (datetime)
 
 ### Prediction
-| Field | Type | Description |
-|-------|------|-------------|
-| id | int | Primary key |
-| patient_id | int | FK to User |
-| medication_id | int | FK to Medication (nullable) |
-| predicted_delay_minutes | int | Predicted delay |
-| risk_level | string | low/medium/high |
-| message | string | Prediction message |
-| generated_at | datetime | Generation time |
+- id (int, PK)
+- patient_id (int, FK to User)
+- medication_id (int, FK to Medication, nullable)
+- predicted_delay_minutes (int)
+- risk_level (low/medium/high)
+- message (string)
+- generated_at (datetime)
 
 ### Prescription
-| Field | Type | Description |
-|-------|------|-------------|
-| id | int | Primary key |
-| image | image | Prescription image |
-| extracted_data | json | OCR data |
-| uploaded_by_id | int | FK to User |
-| patient_id | int | FK to User |
-| created_at | datetime | Creation date |
-        json timings
-        string instructions
-        int patient_id FK
-        int created_by_id FK
-        bool is_active
-        datetime created_at
-    }
-    
-    AdherenceLog {
-        int id PK
-        int medication_id FK
-        int patient_id FK
-        datetime scheduled_time
-        datetime taken_time
-        string status
-        datetime created_at
-    }
-    
-    Prescription {
-        int id PK
-        image image
-        json extracted_data
-        int uploaded_by_id FK
-        int patient_id FK
-        datetime created_at
-    }
-    
-    Prediction {
-        int id PK
-        int patient_id FK
-        int medication_id FK
-        int predicted_delay_minutes
-        string risk_level
-        text message
-        datetime generated_at
-    }
-    
-    User ||--o| PatientProfile : "has"
-    User ||--o{ PatientProfile : "manages"
-    PatientProfile ||--o{ Medication : "has"
-    Medication ||--o{ AdherenceLog : "tracked_by"
-    User ||--o{ Prescription : "uploads"
-    PatientProfile ||--o{ Prescription : "has"
-    PatientProfile ||--o{ Prediction : "has"
-```
+- id (int, PK)
+- image (image)
+- extracted_data (JSON)
+- uploaded_by_id (int, FK to User)
+- patient_id (int, FK to User)
+- created_at (datetime)
 
 ## API Flow
 
 ```mermaid
 sequenceDiagram
     participant Client
-    participant API as Django DRF
-    participant DB as PostgreSQL
-    participant ML as ML Service
+    participant API
+    participant DB
+    participant ML
     
     Client->>API: POST /auth/login/
-    API->>DB: Authenticate user
+    API->>DB: Authenticate
     DB-->>API: User + tokens
     API-->>Client: { user, tokens }
     
-    Client->>API: GET /patients/ (with Bearer token)
-    API->>API: Validate JWT
-    API->>DB: Query PatientProfiles
+    Client->>API: GET /patients/
+    API->>DB: Query patients
     DB-->>API: Patient list
-    API-->>Client: Paginated patients
+    API-->>Client: Paginated data
     
     Client->>API: POST /adherence/log/
-    API->>DB: Create AdherenceLog
-    DB-->>API: Created log
+    API->>DB: Create log
     API-->>Client: Success
     
-    Note over Client,ML: Prediction Flow
     Client->>API: GET /predictions/{id}/
-    API->>ML: Request prediction
+    API->>ML: Get prediction
     ML-->>API: Risk assessment
     API-->>Client: Predictions
 ```
@@ -227,212 +121,74 @@ sequenceDiagram
 
 | Category | Technology |
 |----------|------------|
-| Framework | Django 5 + Django REST Framework |
-| Database | PostgreSQL (SQLite for development) |
-| Authentication | JWT (djangorestframework-simplejwt) |
-| ML | scikit-learn (RandomForest) |
+| Framework | Django 5 + DRF |
+| Database | PostgreSQL |
+| Auth | JWT |
+| ML | scikit-learn |
 | OCR | Azure Form Recognizer |
-| CORS | django-cors-headers |
 
 ## Setup
 
-### Prerequisites
-
-- Python 3.10+
-- PostgreSQL (optional, SQLite works for development)
-
-### Installation
-
 ```bash
-# Navigate to backend
-cd backend/
-
-# Create virtual environment
-python3 -m venv venv
+cd backend
+python -m venv venv
 source venv/bin/activate
-
-# Install dependencies
 pip install -r requirements.txt
-
-# Configure environment
-cp .env.example .env
-# Edit .env with your settings
-
-# Create database (if using PostgreSQL)
-createdb medassist
-
-# Run migrations
 python manage.py migrate
-
-# Create superuser (optional)
-python manage.py createsuperuser
-
-# Seed demo data
 python manage.py seed_demo_data
-
-# Run development server
 python manage.py runserver
 ```
 
-### Demo Credentials
-
-After running `seed_demo_data`:
+## Demo Credentials
 
 | Role | Email | Password |
 |------|-------|----------|
 | Caretaker | dr.smith@medassist.com | MedAssist2026! |
-| Caretaker | dr.patel@medassist.com | MedAssist2026! |
 | Patient | john.doe@example.com | MedAssist2026! |
-| Patient | mary.johnson@example.com | MedAssist2026! |
-| Patient | james.wilson@example.com | MedAssist2026! |
-| Patient | sarah.brown@example.com | MedAssist2026! |
-| Patient | david.lee@example.com | MedAssist2026! |
 
 ## API Endpoints
 
-### Authentication (`/api/auth/`)
+### Auth
+- POST /api/auth/register/
+- POST /api/auth/login/
+- POST /api/auth/refresh/
+- GET /api/auth/me/
 
-| Method | Endpoint | Description | Auth Required |
-|--------|----------|-------------|---------------|
-| POST | `/auth/register/` | Register new user (caretaker/patient) | No |
-| POST | `/auth/login/` | Login with email/password | No |
-| POST | `/auth/refresh/` | Refresh access token | No |
-| GET | `/auth/me/` | Get current user profile | Yes |
-| PUT | `/auth/me/` | Update current user profile | Yes |
+### Patients
+- GET /api/patients/
+- POST /api/patients/
+- GET /api/patients/{id}/
+- GET /api/patients/{id}/detail_with_data/
 
-### Patients (`/api/patients/`)
+### Medications
+- GET /api/medications/
+- POST /api/medications/
+- DELETE /api/medications/{id}/
 
-| Method | Endpoint | Description | Permission |
-|--------|----------|-------------|------------|
-| GET | `/patients/` | List caretaker's patients | Caretaker |
-| POST | `/patients/` | Create patient profile | Caretaker |
-| GET | `/patients/{id}/` | Get patient details | Owner/Caretaker |
-| PUT/PATCH | `/patients/{id}/` | Update patient profile | Owner/Caretaker |
-| DELETE | `/patients/{id}/` | Delete patient profile | Caretaker |
-| GET | `/patients/{id}/detail_with_data/` | Patient with medications & stats | Caretaker |
+### Adherence
+- POST /api/adherence/log/
+- GET /api/adherence/history/
+- GET /api/adherence/stats/
+- GET /api/schedule/today/
 
-### Medications (`/api/medications/`)
+### Predictions
+- GET /api/predictions/{patient_id}/
 
-| Method | Endpoint | Description | Permission |
-|--------|----------|-------------|------------|
-| GET | `/medications/` | List medications | Owner/Caretaker |
-| POST | `/medications/` | Create medication | Caretaker |
-| GET | `/medications/{id}/` | Get medication details | Owner/Caretaker |
-| PUT/PATCH | `/medications/{id}/` | Update medication | Caretaker |
-| DELETE | `/medications/{id}/` | Soft-delete medication | Caretaker |
-
-**Query Parameters:**
-- `patient_id`: Filter by patient
-- `is_active`: Filter by active status
-
-### Adherence (`/api/adherence/`)
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/adherence/log/` | Log medication intake |
-| GET | `/adherence/history/` | Get adherence history (with date filters) |
-| GET | `/adherence/stats/` | Get adherence statistics & streaks |
-
-**Query Parameters:**
-- `patient_id`: Patient ID (required for caretakers)
-- `from`: Start date (YYYY-MM-DD)
-- `to`: End date (YYYY-MM-DD)
-
-### Schedule (`/api/schedule/`)
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/schedule/today/` | Get today's medication schedule |
-
-### Prescriptions (`/api/prescriptions/`)
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/prescriptions/scan/` | Upload & OCR scan prescription |
-| GET | `/prescriptions/` | List prescriptions |
-| GET | `/prescriptions/{id}/` | Get prescription details |
-| DELETE | `/prescriptions/{id}/` | Delete prescription |
-
-### Predictions (`/api/predictions/`)
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/predictions/{patient_id}/` | Get ML predictions for patient |
-| POST | `/predictions/generate/` | Train model & generate predictions |
+### Prescriptions
+- POST /api/prescriptions/scan/
 
 ## Project Structure
 
 ```
 backend/
 ├── manage.py
-├── medassist_backend/          # Project config
-│   ├── settings.py
-│   ├── urls.py
-│   └── wsgi.py
-├── accounts/                   # Custom User model & auth
-│   ├── models.py
-│   ├── views.py
-│   ├── serializers.py
-│   ├── permissions.py
-│   └── backends.py
-├── medications/                # Patient profiles & medications
-│   ├── models.py
-│   ├── views.py
-│   ├── serializers.py
-│   └── urls.py
-├── adherence/                  # Adherence logging & stats
-│   ├── models.py
-│   ├── views.py
-│   ├── serializers.py
-│   └── urls.py
-├── prescriptions/              # OCR prescription scanning
-│   ├── models.py
-│   ├── views.py
-│   ├── services/
-│   └── urls.py
-├── predictions/                # ML risk prediction
-│   ├── models.py
-│   ├── views.py
-│   ├── services/
-│   └── urls.py
-├── ml_models/                  # Trained ML model files
-├── media/                      # Uploaded files
-├── requirements.txt
-└── .env.example
+├── medassist_backend/
+├── accounts/
+├── medications/
+├── adherence/
+├── prescriptions/
+├── predictions/
+├── ml_models/
+├── media/
+└── requirements.txt
 ```
-
-## Management Commands
-
-```bash
-# Seed demo data
-python manage.py seed_demo_data
-python manage.py seed_demo_data --clear  # Clear first
-
-# Generate synthetic training data for ML
-python manage.py generate_training_data
-python manage.py generate_training_data --patients 20 --days 60
-python manage.py generate_training_data --clear
-```
-
-## Known Issues & Improvements
-
-### Security
-- No rate limiting on authentication endpoints
-- CORS wide open in DEBUG mode
-- JWT refresh tokens not blacklisted on logout
-
-### Functionality
-- No pagination on all endpoints
-- No password reset flow
-- No email verification
-
-### Code Quality
-- N+1 query potential in some views
-- Some hardcoded values (timing buckets)
-- No comprehensive test coverage
-
-### Recommended Additions
-- Add drf-spectacular for OpenAPI docs
-- Implement Celery for async OCR processing
-- Add health check endpoint
-- Implement Django signals for cleanup
