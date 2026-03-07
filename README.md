@@ -5,24 +5,19 @@ A comprehensive medication adherence tracking system for elderly patients, featu
 ## System Architecture
 
 ```mermaid
-flowchart TB
-    subgraph Mobile["Android Mobile App"]
-        Android["Kotlin + Jetpack Compose"]
-    end
-    
-    subgraph Web["Web Frontend"]
-        NextJS["Next.js 16 + TypeScript"]
-    end
+graph TD
+    Mobile["Mobile App<br/>Kotlin + Jetpack Compose"]
+    Web["Web Frontend<br/>Next.js 16 + TypeScript"]
     
     subgraph Backend["Django Backend"]
-        API["Django REST API"]
-        ML["ML Prediction Service"]
-        OCR["Azure OCR Service"]
-        DB[("PostgreSQL")]
+        API[REST API]
+        ML[ML Service<br/>RandomForest]
+        OCR[OCR Service<br/>Azure]
+        DB[(PostgreSQL)]
     end
     
-    Android -->|HTTP| API
-    NextJS -->|HTTP| API
+    Mobile --> API
+    Web --> API
     API --> ML
     API --> OCR
     API --> DB
@@ -73,8 +68,8 @@ medassist/
 ### Prerequisites
 - Python 3.10+ (Backend)
 - Node.js 18+ (Frontend)
-- Android Studio + Kotlin (Mobile (optional)
-- PostgreSQL, SQLite for dev)
+- Android Studio + Kotlin (Mobile optional)
+- PostgreSQL, SQLite for dev
 
 ### Backend Setup
 ```bash
@@ -95,56 +90,96 @@ npm run dev
 ```
 
 ### Mobile Setup
-1. Open `mobile-app/` in Android Studio
-2. Update `BASE_URL` in `app/build.gradle.kts`
+1. Open mobile-app/ in Android Studio
+2. Update BASE_URL in app/build.gradle.kts
 3. Build and run on device/emulator
 
 ## API Endpoints
 
 ### Authentication
-- `POST /api/auth/register/` - Register new user
-- `POST /api/auth/login/` - Login (get tokens)
-- `POST /api/auth/refresh/` - Refresh access token
-- `GET /api/auth/me/` - Get current user
+- POST /api/auth/register/ - Register new user
+- POST /api/auth/login/ - Login (get tokens)
+- POST /api/auth/refresh/ - Refresh access token
+- GET /api/auth/me/ - Get current user
 
 ### Patients (Caretaker only)
-- `GET /api/patients/` - List patients
-- `POST /api/patients/` - Create patient
-- `GET /api/patients/{id}/` - Get patient
-- `GET /api/patients/{id}/detail_with_data/` - Full patient data
+- GET /api/patients/ - List patients
+- POST /api/patients/ - Create patient
+- GET /api/patients/{id}/ - Get patient
+- GET /api/patients/{id}/detail_with_data/ - Full patient data
 
 ### Medications
-- `GET /api/medications/` - List medications
-- `POST /api/medications/` - Create medication
-- `DELETE /api/medications/{id}/` - Soft-delete
+- GET /api/medications/ - List medications
+- POST /api/medications/ - Create medication
+- DELETE /api/medications/{id}/ - Soft-delete
 
 ### Adherence
-- `POST /api/adherence/log/` - Log medication intake
-- `GET /api/adherence/history/` - Get history
-- `GET /api/adherence/stats/` - Get statistics
-- `GET /api/schedule/today/` - Today's schedule
+- POST /api/adherence/log/ - Log medication intake
+- GET /api/adherence/history/ - Get history
+- GET /api/adherence/stats/ - Get statistics
+- GET /api/schedule/today/ - Today's schedule
 
 ### Predictions
-- `GET /api/predictions/{patient_id}/` - Get AI predictions
+- GET /api/predictions/{patient_id}/ - Get AI predictions
 
 ### Prescriptions
-- `POST /api/prescriptions/scan/` - OCR scan
+- POST /api/prescriptions/scan/ - OCR scan
 
 ## Demo Credentials
 
-After running `seed_demo_data`:
+After running seed_demo_data:
 
 | Role | Email | Password |
 |------|-------|----------|
 | Caretaker | dr.smith@medassist.com | MedAssist2026! |
 | Patient | john.doe@example.com | MedAssist2026! |
 
+## Data Models
+
+### User
+- id (int, PK)
+- email (string, unique)
+- name (string)
+- phone (string)
+- role (caretaker/patient)
+- is_active (bool)
+- created_at (datetime)
+
+### PatientProfile
+- id (int, PK)
+- user_id (int, FK to User)
+- caretaker_id (int, FK to User)
+- age (int)
+- medical_conditions (string)
+- created_at (datetime)
+
+### Medication
+- id (int, PK)
+- name (string)
+- dosage (string)
+- frequency (string)
+- timings (JSON)
+- instructions (string)
+- patient_id (int, FK to User)
+- created_by_id (int, FK to User)
+- is_active (bool)
+- created_at (datetime)
+
+### AdherenceLog
+- id (int, PK)
+- medication_id (int, FK to Medication)
+- patient_id (int, FK to User)
+- scheduled_time (datetime)
+- taken_time (datetime, nullable)
+- status (taken/missed/late)
+- created_at (datetime)
+
 ## Documentation
 
 Each component has its own detailed README:
 
 - [Backend README](backend/README.md)
-- [Frontend README](frontend/README.md)  
+- [Frontend README](frontend/README.md)
 - [Mobile App README](mobile-app/README.md)
 
 ## Repository Links
