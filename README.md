@@ -2,13 +2,13 @@
 
 AI-Powered Medication Adherence System - Django REST API backend.
 
-## Architecture Overview
+## Architecture
 
 ```mermaid
-flowchart TB
+graph TD
     subgraph Clients
-        Mobile[("Mobile App")]
-        Web[("Web Frontend")]
+        Mobile[Mobile App]
+        Web[Web Frontend]
     end
     
     subgraph Django["Django Backend"]
@@ -22,32 +22,59 @@ flowchart TB
         end
         
         subgraph Business["Business Logic"]
-            JWT[JWT Authentication]
-            Perms[Permission Classes]
+            JWT[JWT Auth]
+            Perms[Permissions]
             Serializers[DRF Serializers]
         end
         
-        subgraph ML["ML Services"]
-            Predictor["Risk Prediction"]
-            OCR["Azure OCR"]
+        subgraph Services["Services"]
+            ML[ML Prediction]
+            OCR[Azure OCR]
         end
         
-        subgraph Data["Data Layer"]
-            DB[("PostgreSQL")]
-        end
+        DB[(PostgreSQL)]
     end
     
-    Mobile -->|HTTP/HTTPS| API
-    Web -->|HTTP/HTTPS| API
-    
+    Mobile --> API
+    Web --> API
     API --> Business
     Business --> Serializers
-    Serializers -->|Query| DB
-    
+    Serializers --> DB
     Business --> Perms
     Business --> JWT
     Predictions --> ML
     Prescriptions --> OCR
+```
+Clients: Mobile App, Web Frontend
+    │
+    ▼
+┌─────────────────────────────────────────┐
+│           Django Backend                │
+│  ┌─────────────────────────────────┐   │
+│  │      API Endpoints              │   │
+│  │  - Auth (login, register)       │   │
+│  │  - Patients                     │   │
+│  │  - Medications                  │   │
+│  │  - Adherence                    │   │
+│  │  - Predictions                 │   │
+│  │  - Prescriptions (OCR)          │   │
+│  └─────────────────────────────────┘   │
+│                  │                      │
+│  ┌─────────────────────────────────┐   │
+│  │  Business Logic                 │   │
+│  │  - JWT Authentication           │   │
+│  │  - Permission Classes           │   │
+│  │  - DRF Serializers             │   │
+│  └─────────────────────────────────┘   │
+│                  │                      │
+│  ┌─────────────────────────────────┐   │
+│  │  Services                       │   │
+│  │  - ML Prediction (RandomForest)│   │
+│  │  - OCR (Azure Form Recognizer) │   │
+│  └─────────────────────────────────┘   │
+│                  │                      │
+└───────────────────▼──────────────────────
+              PostgreSQL
 ```
 
 ## Data Models
