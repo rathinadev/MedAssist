@@ -168,3 +168,6 @@ CORS_ALLOWED_ORIGINS = [
 # Azure Form Recognizer (OCR)
 AZURE_FORM_RECOGNIZER_ENDPOINT = os.getenv("AZURE_FORM_RECOGNIZER_ENDPOINT", "")
 AZURE_FORM_RECOGNIZER_KEY = os.getenv("AZURE_FORM_RECOGNIZER_KEY", "")
+
+# Gemini API (for intelligent parsing)
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
