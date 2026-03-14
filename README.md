@@ -1,189 +1,173 @@
-# MedAssist - AI-Powered Medication Adherence System
+# 💊 MedAssist: AI-Powered Medication Adherence System
 
-A comprehensive medication adherence tracking system for elderly patients, featuring a Django REST API backend, Next.js web frontend, and Kotlin Android mobile app.
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Python](https://img.shields.io/badge/Python-3.11+-blue.svg?logo=python&logoColor=white)](https://www.python.org/)
+[![Django](https://img.shields.io/badge/Django-5.0+-green.svg?logo=django&logoColor=white)](https://www.djangoproject.com/)
+[![Next.js](https://img.shields.io/badge/Next.js-15.0+-black.svg?logo=next.js&logoColor=white)](https://nextjs.org/)
+[![Kotlin](https://img.shields.io/badge/Kotlin-1.9+-purple.svg?logo=kotlin&logoColor=white)](https://kotlinlang.org/)
 
-## System Architecture
+MedAssist is a state-of-the-art health ecosystem designed to solve one of the most persistent challenges in healthcare: **medication non-adherence**. Combining Cloud AI, Machine Learning, and an intuitive Cross-Platform UI, MedAssist ensures patients stay on track while giving caretakers peace of mind.
+
+---
+
+## 🏗 System Architecture
+
+The MedAssist ecosystem is built on a scalable, modular architecture designed for high availability and intelligent data processing.
 
 ```mermaid
 graph TD
-    Mobile["Mobile App<br/>Kotlin + Jetpack Compose"]
-    Web["Web Frontend<br/>Next.js 16 + TypeScript"]
-    
-    subgraph Backend["Django Backend"]
-        API[REST API]
-        ML[ML Service<br/>RandomForest]
-        OCR[OCR Service<br/>Azure]
-        DB[(PostgreSQL)]
+    %% Users
+    UserPat["Patient (Mobile/Web)"]
+    UserCare["Caretaker (Web/Mobile)"]
+
+    %% Entry Points
+    subgraph Clients ["Client Applications"]
+        Mobile["Android App (Kotlin)"]
+        Web["Next.js Dashboard"]
     end
-    
+
+    %% Backend Service
+    subgraph Core ["MedAssist Core Service (Django)"]
+        API["REST API Layer"]
+        Auth["JWT Authentication"]
+        
+        subgraph Logic ["Business Logic"]
+            Meds["Medication Mgmt"]
+            Adh["Adherence Engine"]
+            OCR_Logic["OCR Processing"]
+            ML_Logic["Predictive Analytics"]
+        end
+        
+        DB[("PostgreSQL Database")]
+    end
+
+    %% External Services
+    subgraph External ["Intelligence Cloud"]
+        Azure["Azure Form Recognizer"]
+        Scikit["RandomForest ML Engine"]
+    end
+
+    %% Connections
+    UserPat --> Mobile
+    UserCare --> Web
     Mobile --> API
     Web --> API
-    API --> ML
-    API --> OCR
-    API --> DB
+    API --> Auth
+    API --> Logic
+    Logic --> DB
+    OCR_Logic -.-> Azure
+    ML_Logic -.-> Scikit
 ```
 
-## Project Structure
+---
 
+## 📂 Project Structure (Monorepo)
+
+This repository is organized as a **Monorepo**, housing the entire ecosystem in three main modules:
+
+| Module | Purpose | Tech Stack |
+| :--- | :--- | :--- |
+| [**`backend/`**](./backend) | The heart of the system—handles API, ML, and OCR. | Django, DRF, scikit-learn |
+| [**`frontend/`**](./frontend) | The web-based dashboard for caretakers and patients. | Next.js 15, TypeScript, Tailwind |
+| [**`mobile-app/`**](./mobile-app) | The patient-centric Android application. | Kotlin, Jetpack Compose, Room |
+
+---
+
+## ✨ Key Features
+
+### 🔎 Intelligent OCR Scanning
+Upload a photograph of any prescription. MedAssist uses **Azure Form Recognizer** to intelligently parse medication names, dosages, and frequencies, allowing for 1-click schedule creation.
+
+### 🔮 Predictive Analytics
+Built on a **Random Forest** model, MedAssist analyzes historical adherence patterns to predict:
+- **Risk Level**: High, Medium, or Low risk of future non-adherence.
+- **Predicted Delay**: Calculated in minutes for upcoming doses.
+- **Behavior Patterns**: Identifies specific times or days when a patient is most likely to miss.
+
+### 📋 Full-Cycle Tracking
+- **Caretakers**: Manage patient lists, set complex intervals, and see real-time alerts.
+- **Patients**: Simplified "1-tap" logging, daily schedules, and progress streaks.
+
+---
+
+## 📊 Database Schema (ERD)
+
+```mermaid
+erDiagram
+    USER ||--o| PATIENT_PROFILE : "as caretaker or patient"
+    USER ||--o{ MEDICATION : "creates/takes"
+    USER ||--o{ ADHERENCE_LOG : "records"
+    USER ||--o{ PRESCRIPTION : "uploads"
+    
+    MEDICATION ||--o{ ADHERENCE_LOG : "schedules"
+    MEDICATION ||--o{ PREDICTION : "predicts"
+    
+    PATIENT_PROFILE {
+        int id
+        int user_id
+        int age
+        string medical_conditions
+        int caretaker_id
+    }
+    
+    MEDICATION {
+        int id
+        string name
+        string dosage
+        string frequency
+        json timings
+        boolean is_active
+    }
+    
+    ADHERENCE_LOG {
+        int id
+        datetime scheduled_time
+        datetime taken_time
+        string status
+    }
+    
+    PREDICTION {
+        int id
+        float predicted_delay
+        string risk_level
+        datetime generated_at
+    }
 ```
-medassist/
-├── backend/              # Django REST API
-├── frontend/            # Next.js Web App
-├── mobile-app/          # Kotlin Android App
-├── api-spec.md          # API Contract
-└── CLAUDE.md           # Development Guide
-```
 
-## Tech Stack
+---
 
-| Component | Technology |
-|-----------|------------|
-| Backend | Django 5 + DRF + PostgreSQL |
-| Frontend | Next.js 16 + TypeScript + Tailwind |
-| Mobile | Kotlin + Jetpack Compose + Room |
-| Auth | JWT (simplejwt) |
-| ML | scikit-learn (RandomForest) |
-| OCR | Azure Form Recognizer |
+## 🚀 Quick Start
 
-## Features
+### 1. Prerequisites
+- Docker (optional) OR Python 3.11, Node.js 20, and Android Studio.
+- Azure Form Recognizer Key (for OCR).
 
-### For Caretakers
-- Patient management (add, view, remove)
-- Medication CRUD for patients
-- View adherence statistics and streaks
-- AI-powered risk predictions
-- Prescription scanning with OCR
-- High-risk patient alerts
-
-### For Patients
-- Today's medication schedule
-- One-tap medication logging
-- Adherence streak tracking
-- Prescription scanning
-- Adherence history with charts
-- Medication reminders
-
-## Getting Started
-
-### Prerequisites
-- Python 3.10+ (Backend)
-- Node.js 18+ (Frontend)
-- Android Studio + Kotlin (Mobile optional)
-- PostgreSQL, SQLite for dev
-
-### Backend Setup
+### 2. Launch Backend
 ```bash
 cd backend
-python -m venv venv
-source venv/bin/activate
+python -m venv venv && source venv/bin/activate
 pip install -r requirements.txt
 python manage.py migrate
 python manage.py seed_demo_data
 python manage.py runserver
 ```
 
-### Frontend Setup
+### 3. Launch Frontend
 ```bash
 cd frontend
 npm install
 npm run dev
 ```
 
-### Mobile Setup
-1. Open mobile-app/ in Android Studio
-2. Update BASE_URL in app/build.gradle.kts
-3. Build and run on device/emulator
+---
 
-## API Endpoints
+## 👨‍🎓 Final Year Project Details
+*This project was developed as a comprehensive healthcare solution for Final Year Engineering curriculum.*
 
-### Authentication
-- POST /api/auth/register/ - Register new user
-- POST /api/auth/login/ - Login (get tokens)
-- POST /api/auth/refresh/ - Refresh access token
-- GET /api/auth/me/ - Get current user
+**Team Leads**: 
+- **Backend Architecture**: [Santoshi](https://github.com/santoshi004)
+- **Frontend/UI Experience**: [Ramya](https://github.com/ramyaS1205)
+- **Mobile Systems**: [Savita](https://github.com/Savita-debug)
 
-### Patients (Caretaker only)
-- GET /api/patients/ - List patients
-- POST /api/patients/ - Create patient
-- GET /api/patients/{id}/ - Get patient
-- GET /api/patients/{id}/detail_with_data/ - Full patient data
-
-### Medications
-- GET /api/medications/ - List medications
-- POST /api/medications/ - Create medication
-- DELETE /api/medications/{id}/ - Soft-delete
-
-### Adherence
-- POST /api/adherence/log/ - Log medication intake
-- GET /api/adherence/history/ - Get history
-- GET /api/adherence/stats/ - Get statistics
-- GET /api/schedule/today/ - Today's schedule
-
-### Predictions
-- GET /api/predictions/{patient_id}/ - Get AI predictions
-
-### Prescriptions
-- POST /api/prescriptions/scan/ - OCR scan
-
-## Demo Credentials
-
-After running seed_demo_data:
-
-| Role | Email | Password |
-|------|-------|----------|
-| Caretaker | dr.smith@medassist.com | MedAssist2026! |
-| Patient | john.doe@example.com | MedAssist2026! |
-
-## Data Models
-
-### User
-- id (int, PK)
-- email (string, unique)
-- name (string)
-- phone (string)
-- role (caretaker/patient)
-- is_active (bool)
-- created_at (datetime)
-
-### PatientProfile
-- id (int, PK)
-- user_id (int, FK to User)
-- caretaker_id (int, FK to User)
-- age (int)
-- medical_conditions (string)
-- created_at (datetime)
-
-### Medication
-- id (int, PK)
-- name (string)
-- dosage (string)
-- frequency (string)
-- timings (JSON)
-- instructions (string)
-- patient_id (int, FK to User)
-- created_by_id (int, FK to User)
-- is_active (bool)
-- created_at (datetime)
-
-### AdherenceLog
-- id (int, PK)
-- medication_id (int, FK to Medication)
-- patient_id (int, FK to User)
-- scheduled_time (datetime)
-- taken_time (datetime, nullable)
-- status (taken/missed/late)
-- created_at (datetime)
-
-## Documentation
-
-Each component has its own detailed README:
-
-- [Backend README](backend/README.md)
-- [Frontend README](frontend/README.md)
-- [Mobile App README](mobile-app/README.md)
-
-## Repository Links
-
-- **Backend**: https://github.com/santoshi004/Backend
-- **Frontend**: https://github.com/ramyaS1205/Front-end
-- **Mobile**: https://github.com/Savita-debug/mobile-app
+---
+<p align="center">Made with ❤️ for Health Tech Excellence</p>
