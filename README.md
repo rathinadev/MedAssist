@@ -82,6 +82,16 @@ To understand the system, one must trace the life cycle of a single medication d
 | **Mobile** | Reminders, Offline Logging, UI | Kotlin, Jetpack Compose, Room, AlarmManager |
 | **Infrastructure** | Identity, External AI | SimpleJWT, Azure AI Services |
 
+## 📘 The Technical Bible (Student Study Guide)
+
+For students who need to understand every single data flow and logic implementation, we have created the **Technical Bible**. This is a deep-dive series that traces logic from the UI to the Database:
+
+- [**Data Dictionary**](./docs/bible/data-dictionary.md): Master mapping of every field across the whole system.
+- [**Prescription Lifecycle**](./docs/bible/lifecycle-prescription-to-pill.md): Step-by-step code trace of the OCR and scanning system.
+- [**Adherence Mathematics**](./docs/bible/logic-adherence-mathematics.md): Detailed logic behind streaks and adherence scores.
+- [**Predictive AI Internals**](./docs/bible/logic-predictive-analytics.md): How logs are transformed into ML features for risk prediction.
+- [**Mobile System Logic**](./docs/bible/logic-mobile-systems.md): Offline syncing, Room DB, and Android Alarm scheduling.
+
 ## 5. Repository Structure (Monorepo)
 
 For development ease, this project is structured as a monorepo. Detailed technical documentation for each component is available in their respective directories:
