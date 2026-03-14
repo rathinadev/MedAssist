@@ -1,30 +1,61 @@
-# Technical Guide: ML Model Details
+# Technical Guide: ML Feature Engineering & Analytics (Advanced)
 
-This document provides a technical deep-dive into the predictive analytics engine.
+This document provides a exhaustive breakdown of how patient behavior is transformed into predictive risk data.
 
-## 1. Machine Learning Architecture
-MedAssist utilizes **Random Forest** models (via `scikit-learn`) to predict behavioral risks.
+---
 
-- **Classifier**: Categorizes patient risk as `low`, `medium`, or `high`.
-- **Regressor**: Predicts the specific delay in minutes for the next dose.
+## 1. Feature Engineering (The 16 Dimensions)
+A Machine Learning model is only as good as the numbers it reads. We transform raw `AdherenceLog` records into a fixed-length vector of **16 features**.
 
-## 2. Feature Vector (The 16 Inputs)
-For every prediction, the system transforms adherence history into a 16-dimensional vector:
+**Code Reference**: `backend/predictions/services/ml_service.py` -> `_extract_features()`
 
-| Feature | Description |
-| :--- | :--- |
-| `miss_rate` | Ratio of missed doses to total scheduled. |
-| `avg_delay` | Mean delay in minutes for all 'Taken' or 'Late' doses. |
-| `consecutive_misses`| Maximum number of consecutive 'Missed' statuses. |
-| `day_pattern_0-6` | Adherence rate per specific day of the week (7 features). |
-| `time_pattern_*` | Adherence rate for Morning, Afternoon, Evening, and Night (4 features). |
+### Behavioral Constants (5 Features)
+1.  **`avg_delay`**: Mean deviation in minutes for all non-missed doses.
+2.  **`miss_rate`**: `missed_count / total_count`.
+3.  **`late_rate`**: `late_count / total_count`.
+4.  **`consecutive_misses`**: The maximum streak of `missed` status logs.
+5.  **`total_logs`**: The count of events (serves as the "experience" level of the model).
 
-## 3. Training & Inference Flow
-**Source**: `backend/predictions/services/ml_service.py`
+### Temporal Patterns (11 Features)
+- **`day_pattern_0-6`**: Percentage of success for each day from Monday (0) to Sunday (6).
+  - *Why?*: Detects users who struggle on weekends vs. weekdays.
+- **`time_pattern_morning/afternoon/evening/night`**: Percentage of success in 4-hour windows.
+  - *Why?*: Identifies users who miss "Morning" doses (oversleeping) vs. "Night" doses.
 
-1. **Training**: The system uses `RandomForestClassifier(n_estimators=100)`. It learns by comparing feature vectors against historical outcomes.
-2. **Inference**: When a dashboard is loaded, the current features are passed through the pre-trained `risk_classifier.pkl` and `delay_regressor.pkl` files.
-3. **Fallback Logic**: If a patient has fewer than 5 data points, a rule-based engine is used (e.g., `Risk = High` if `miss_rate > 0.4`).
+---
 
-## 4. Model Selection Rationale
-Random Forest was selected due to its excellence with non-linear tabular data and its resistance to overfitting. It allows the system to detect subtle patterns, such as "Patient is reliable on weekdays but misses doses on Sunday nights."
+## 2. Model Architecture
+MedAssist uses a **Dual RandomForest System**.
+
+### A. The Risk Classifier (`risk_classifier.pkl`)
+- **Type**: RandomForestClassifier
+- **Goal**: Predict a label (`low`, `medium`, `high`).
+- **Learning**: It maps the 16 features against a ground-truth "Health Grade" during the training phase.
+
+### B. The Delay Regressor (`delay_regressor.pkl`)
+- **Type**: RandomForestRegressor
+- **Goal**: Predict a continuous value (minutes).
+- **Learning**: It correlates behavioral delay patterns with the most likely delay for the next dose.
+
+---
+
+## 3. The Lifecycle of a Prediction
+1. **Trigger**: Caretaker visits a Dashboard.
+2. **Extraction**: The `ml_service` pulls all logs for the patient.
+3. **Imputation**: If a feature is missing (e.g., no logs for "Monday"), the system defaults it to `1.0` (assume good behavior) to prevent model bias.
+4. **Execution**: The models are loaded from disk (`.pkl` files) and the `predict()` function is called.
+5. **Persistence**: The results are saved to the `Prediction` model and sent to the frontend.
+
+---
+
+## 4. Rule-Based Fallback (The "Zero-Data" Guard)
+**Reference**: `_rule_based_prediction()`
+
+When the ML models lack sufficient training data (less than 5 logs), we use fixed logic:
+- **High Risk**: If `miss_rate` > 40% OR `consecutive_misses` >= 5.
+- **Medium Risk**: If `miss_rate` > 15% OR `avg_delay` > 30 minutes.
+- **Low Risk**: Standard compliance.
+
+---
+### Technical Summary for Student Presenters:
+> "We transform subjective human behavior into 16 objective mathematical features. This allows our Random Forest models to detect patterns that are invisible to a human caretaker—such as a specifically declining adherence on Tuesday afternoons."
