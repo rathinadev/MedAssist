@@ -44,11 +44,10 @@ Unlike standard timers, `AlarmManager` communicates directly with the Android OS
 2. Update the `Constants.BASE_URL` with your local machine's IP address (e.g., `192.168.x.x`).
 3. Build and deploy to an Emulator or Physical Device (API Level 26+).
 
-## 7. Technical Bible: Implementation Deep-Dives
+## 7. Technical Implementation Guides
 
-Study these guides to master the Android-specific logic of MedAssist:
-- [**Sync & Alarm Logic**](../docs/bible/logic-mobile-systems.md): Deep-dive into Room DB, Repository patterns, and AlarmManager.
-- [**Data Mapping**](../docs/bible/data-dictionary.md): How mobile fields map to the central API.
+- [**Sync & Alarm Logic**](../docs/technical-guides/mobile-architecture-sync.md): Room DB and AlarmManager mechanics.
+- [**Data Mapping**](../docs/technical-guides/data-dictionary.md): Mobile to API field mapping.
 
 ---
 *Technical Lead: Savita*

@@ -51,12 +51,10 @@ npm run dev
 
 **Environment Configuration**: Ensure `NEXT_PUBLIC_API_URL` points to your running Django server.
 
-## 6. Technical Bible: Implementation Deep-Dives
+## 6. Technical Implementation Guides
 
-For a detailed understanding of how the frontend interacts with the system logic:
-- [**API Resilience & Interceptors**](../docs/bible/logic-api-resilience.md): How we handle security tokens and network retries.
-- [**Data Dictionary**](../docs/bible/data-dictionary.md): Mapping of UI fields to Backend models.
-- [**The Scan Lifecycle**](../docs/bible/lifecycle-prescription-to-pill.md): How the frontend handles OCR review and validation.
+- [**Data Flow Mapping**](../docs/technical-guides/data-dictionary.md): UI to Backend field mapping.
+- [**The Scan Lifecycle**](../docs/technical-guides/prescription-flow-trace.md): OCR review and validation flow.
 
 ---
 *Technical Lead: Ramya*
