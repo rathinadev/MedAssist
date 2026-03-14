@@ -1,76 +1,48 @@
-# 📱 MedAssist Mobile: Patient Care Companion
+# MedAssist Mobile: Android System Implementation
 
-[![Kotlin](https://img.shields.io/badge/Kotlin-1.9+-purple.svg?logo=kotlin&logoColor=white)](https://kotlinlang.org/)
-[![Android](https://img.shields.io/badge/Android-8.0+-green.svg?logo=android&logoColor=white)](https://www.android.com/)
-[![Compose](https://img.shields.io/badge/Jetpack_Compose-Latest-blue.svg?logo=android&logoColor=white)](https://developer.android.com/jetpack/compose)
+The MedAssist mobile app is a robust, offline-first native Android application built with **Kotlin** and **Jetpack Compose**.
 
-The mobile app is the "Boots on the Ground" for MedAssist. It lives in the patient's pocket, providing offline medication management, intelligent reminders, and seamless data sync.
+## 1. Software Architecture (MVVM)
 
----
+The app follows the **Model-View-ViewModel** pattern to ensure clean separation of concerns and testability.
 
-## 🌎 System Overview (The Big Picture)
+- **Model (Data Layer)**: Handles data retrieval from the Django API and the local Room database.
+- **ViewModel (State Layer)**: Manages UI state and survives configuration changes (like screen rotation). Uses `StateFlow` to provide reactive updates to the UI.
+- **View (UI Layer)**: Built entirely with Jetpack Compose, emphasizing a declarative UI approach.
 
-MedAssist is an ecosystem. The Mobile app acts as a local node that syncs with the central Backend.
+## 2. Persistence Layer (Room DB)
 
-### Full System Architecture
-```mermaid
-graph TD
-    %% Clients
-    Web["Next.js Web (Caretaker)"]
-    App["Kotlin App (Patient)"]
+To ensure reliability in low-connectivity environments, MedAssist utilizes an **Offline-First** strategy:
+- **Local Cache**: Every medication and schedule item pulled from the API is mirrored in a local SQLite database (via Room).
+- **Synchronization**: The code uses a repository pattern that first checks the local cache for immediate display, then triggers a background network fetch to reconcile data with the server.
 
-    %% Backend
-    subgraph Core ["Django REST Backend"]
-        API["REST API Layer"]
-        DB[(PostgreSQL)]
-        ML["Random Forest Engine"]
-        OCR["Prescription Parser"]
-    end
+## 3. System-Level Integration (Alarms & Notifications)
 
-    %% External
-    Azure["Azure Cloud AI"]
+The most critical feature of the mobile app is the medication reminder system:
 
-    %% Data Flow
-    Web -- "Manage Meds / Scan" --> API
-    App -- "Log Intake" --> API
-    API -- "Data Storage" --> DB
-    API -- "Behavior Risk" --> ML
-    API -- "Image Analysis" --> OCR
-    OCR -.-> Azure
-```
+### AlarmManager Logic
+Unlike standard timers, `AlarmManager` communicates directly with the Android OS to schedule "Exact Alarms". This ensures the phone wakes up to notify the patient even when in deep battery-saving mode.
 
-### The "MedAssist Cycle"
-1. **Sync**: On startup, the app pulls the full medication list and `TodaySchedule` from the backend.
-2. **Persistence**: All data is stored in the **Room Database** for offline access.
-3. **Alarms**: `AlarmManager` schedules precise system notifications for every med.
-4. **Loopback**: When the patient taps "Take" on a notification, it updates the local DB and sends a POST request to the backend to update caretaker statistics.
+### BroadcastReceivers
+- **`MedicationAlarmReceiver`**: Triggered by the OS when a dose is due. It builds and displays a high-priority system notification.
+- **`BootReceiver`**: Listens for the `ACTION_BOOT_COMPLETED` system event. This allows the app to automatically reschedule all medication alarms if the user's phone is restarted.
 
----
+## 4. Networking and Security
 
-## 🌟 Mobile Features
+- **Retrofit & OkHttp**: Used for type-safe API communication. Includes a custom interceptor that handles JWT token injection and auto-refresh logic matching the Web frontend.
+- **Encrypted SharedPreferences**: Stores sensitive authentication tokens to prevent unauthorized access by other apps on the device.
 
-### Offline-First Architecture
-Designed for reliability. Even if the patient has no internet, the medication alarms will trigger, and all logs will be queued for sync once the network returns.
+## 5. Component Structure
 
-### Exact Medication Alarms
-Uses the Android System Alarm service to ensure notifications are never delayed by battery-saving "Doze" modes.
+- **`com.medassist.app.ui.patient`**: Screens for the daily schedule and logging intake.
+- **`com.medassist.app.data.local`**: DAOs and Entity definitions for the Room database.
+- **`com.medassist.app.notifications`**: Management logic for system-level notifications and alarm scheduling.
+
+## 6. Setup
+
+1. Open in **Android Studio**.
+2. Update the `Constants.BASE_URL` with your local machine's IP address (e.g., `192.168.x.x`).
+3. Build and deploy to an Emulator or Physical Device (API Level 26+).
 
 ---
-
-## 🏗 Technical Stack
-- **UI**: Jetpack Compose (Declarative UI).
-- **Storage**: Room (Local SQL cache).
-- **Networking**: Retrofit + OkHttp.
-- **Scheduling**: WorkManager (Background Sync) + AlarmManager (Notifications).
-
----
-
-## 🚀 Getting Started
-
-1. Open this folder in **Android Studio**.
-2. Sync the project with Gradle.
-3. Replace the `BASE_URL` in your network constants with your Backend's IP address.
-4. Build and run on an Android device (API Level 26+).
-
----
-<p align="center">Part of the MedAssist Final Year Project Ecosystem</p>
+*Technical Lead: Savita*

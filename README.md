@@ -1,173 +1,94 @@
-# 💊 MedAssist: AI-Powered Medication Adherence System
+# MedAssist: Technical System Overview
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Python](https://img.shields.io/badge/Python-3.11+-blue.svg?logo=python&logoColor=white)](https://www.python.org/)
-[![Django](https://img.shields.io/badge/Django-5.0+-green.svg?logo=django&logoColor=white)](https://www.djangoproject.com/)
-[![Next.js](https://img.shields.io/badge/Next.js-15.0+-black.svg?logo=next.js&logoColor=white)](https://nextjs.org/)
-[![Kotlin](https://img.shields.io/badge/Kotlin-1.9+-purple.svg?logo=kotlin&logoColor=white)](https://kotlinlang.org/)
+MedAssist is an integrated healthcare ecosystem designed to enhance medication adherence through automation, predictive analytics, and cross-platform synchronization. This documentation serves as the master technical guide for the entire system.
 
-MedAssist is a state-of-the-art health ecosystem designed to solve one of the most persistent challenges in healthcare: **medication non-adherence**. Combining Cloud AI, Machine Learning, and an intuitive Cross-Platform UI, MedAssist ensures patients stay on track while giving caretakers peace of mind.
+## 1. System Philosophy and Objectives
 
----
+The core objective of MedAssist is to close the feedback loop between patient behavior and caretaker oversight. The system addresses the "silent" nature of medication non-adherence by:
+- **Digitizing Input**: Converting physical prescriptions into digital schedules using OCR.
+- **Active Monitoring**: Recording real-time adherence logs (Taken, Late, Missed).
+- **Predictive Intervention**: Using Machine Learning to identify high-risk patients before health complications occur.
 
-## 🏗 System Architecture
+## 2. Global Architecture
 
-The MedAssist ecosystem is built on a scalable, modular architecture designed for high availability and intelligent data processing.
+The system follows a distributed client-server architecture with a centralized AI-powered backend.
 
 ```mermaid
 graph TD
-    %% Users
-    UserPat["Patient (Mobile/Web)"]
-    UserCare["Caretaker (Web/Mobile)"]
-
-    %% Entry Points
-    subgraph Clients ["Client Applications"]
-        Mobile["Android App (Kotlin)"]
-        Web["Next.js Dashboard"]
+    %% Client Tier
+    subgraph Client_Tier ["Client Tier (Presentation)"]
+        Web["Next.js Application<br/>(Caretaker/Patient Portals)"]
+        Mobile["Kotlin Android App<br/>(Patient-Centric Companion)"]
     end
 
-    %% Backend Service
-    subgraph Core ["MedAssist Core Service (Django)"]
-        API["REST API Layer"]
-        Auth["JWT Authentication"]
-        
-        subgraph Logic ["Business Logic"]
-            Meds["Medication Mgmt"]
-            Adh["Adherence Engine"]
-            OCR_Logic["OCR Processing"]
-            ML_Logic["Predictive Analytics"]
+    %% Application Tier
+    subgraph App_Tier ["Application Tier (Logic)"]
+        RestAPI["Django REST Framework API"]
+        Auth["JWT Security Layer"]
+        subgraph Internal_Engines ["Processing Engines"]
+            Logic["Adherence Logic Engine"]
+            ML["RandomForest ML Service"]
+            OCR["OCR Parsing Service"]
         end
-        
-        DB[("PostgreSQL Database")]
     end
 
-    %% External Services
-    subgraph External ["Intelligence Cloud"]
+    %% Data Tier
+    subgraph Data_Tier ["Data Tier (Persistence)"]
+        Postgres[(PostgreSQL Database)]
+        LocalStorage[(Android Room DB)]
+    end
+
+    %% External Tier
+    subgraph External_Tier ["External AI Cloud"]
         Azure["Azure Form Recognizer"]
-        Scikit["RandomForest ML Engine"]
     end
 
-    %% Connections
-    UserPat --> Mobile
-    UserCare --> Web
-    Mobile --> API
-    Web --> API
-    API --> Auth
-    API --> Logic
-    Logic --> DB
-    OCR_Logic -.-> Azure
-    ML_Logic -.-> Scikit
+    %% Interactions
+    Web -- "HTTPS/JSON" --> RestAPI
+    Mobile -- "HTTPS/JSON" --> RestAPI
+    RestAPI -- "RBAC / JWT" --> Auth
+    RestAPI -- "ORM" --> Postgres
+    RestAPI --> Internal_Engines
+    OCR -.-> Azure
+    Mobile -- "SQLite" --> LocalStorage
 ```
 
----
+## 3. The MedAssist Life Cycle (Data Flow)
 
-## 📂 Project Structure (Monorepo)
+To understand the system, one must trace the life cycle of a single medication dose from creation to analysis:
 
-This repository is organized as a **Monorepo**, housing the entire ecosystem in three main modules:
+1.  **Ingestion (OCR Layer)**:
+    - A caretaker uploads a prescription image via the Web or Mobile interface.
+    - The Backend proxies the image to **Azure Form Recognizer**.
+    - The raw OCR JSON is mapped to internal `Medication` objects (Name, Dosage, Frequency, Timings).
+2.  **Scheduling (Persistence Layer)**:
+    - `Medication` objects are committed to PostgreSQL.
+    - An automated process generates daily `ScheduleEntry` items for each patient based on the frequency (Once Daily, Twice Daily, etc.).
+3.  **Engagement (Interaction Layer)**:
+    - The Mobile App pulls the `TodaySchedule`.
+    - If offline, the app uses the local **Room DB**.
+    - The patient logs an intake. This triggers an immediate timestamp record (`taken_time`).
+4.  **Analysis (Intelligence Layer)**:
+    - Every log entry is fed into a **Random Forest** feature extractor.
+    - The system calculates metrics: `avg_delay`, `miss_rate`, and `consecutive_misses`.
+    - The caretaker sees the resulting `Risk Level` (Low/Medium/High) on their dashboard.
 
-| Module | Purpose | Tech Stack |
+## 4. Technology Stack Summary
+
+| Layer | Responsibility | Technology |
 | :--- | :--- | :--- |
-| [**`backend/`**](./backend) | The heart of the system—handles API, ML, and OCR. | Django, DRF, scikit-learn |
-| [**`frontend/`**](./frontend) | The web-based dashboard for caretakers and patients. | Next.js 15, TypeScript, Tailwind |
-| [**`mobile-app/`**](./mobile-app) | The patient-centric Android application. | Kotlin, Jetpack Compose, Room |
+| **Backend** | API, ML, OCR, DB Management | Python 3.11, Django 5.0, DRF, Scikit-Learn |
+| **Web** | Caretaker Dashboard, Detailed Analytics | Next.js 15, TypeScript, Tailwind CSS |
+| **Mobile** | Reminders, Offline Logging, UI | Kotlin, Jetpack Compose, Room, AlarmManager |
+| **Infrastructure** | Identity, External AI | SimpleJWT, Azure AI Services |
+
+## 5. Repository Structure (Monorepo)
+
+For development ease, this project is structured as a monorepo. Detailed technical documentation for each component is available in their respective directories:
+
+- [**backend/**](./backend): API endpoints, Machine Learning pipelines, and Database schema.
+- [**frontend/**](./frontend): Web-based dashboards and state management patterns.
+- [**mobile-app/**](./mobile-app): Android-specific implementation including local persistence and system-level alarms.
 
 ---
-
-## ✨ Key Features
-
-### 🔎 Intelligent OCR Scanning
-Upload a photograph of any prescription. MedAssist uses **Azure Form Recognizer** to intelligently parse medication names, dosages, and frequencies, allowing for 1-click schedule creation.
-
-### 🔮 Predictive Analytics
-Built on a **Random Forest** model, MedAssist analyzes historical adherence patterns to predict:
-- **Risk Level**: High, Medium, or Low risk of future non-adherence.
-- **Predicted Delay**: Calculated in minutes for upcoming doses.
-- **Behavior Patterns**: Identifies specific times or days when a patient is most likely to miss.
-
-### 📋 Full-Cycle Tracking
-- **Caretakers**: Manage patient lists, set complex intervals, and see real-time alerts.
-- **Patients**: Simplified "1-tap" logging, daily schedules, and progress streaks.
-
----
-
-## 📊 Database Schema (ERD)
-
-```mermaid
-erDiagram
-    USER ||--o| PATIENT_PROFILE : "as caretaker or patient"
-    USER ||--o{ MEDICATION : "creates/takes"
-    USER ||--o{ ADHERENCE_LOG : "records"
-    USER ||--o{ PRESCRIPTION : "uploads"
-    
-    MEDICATION ||--o{ ADHERENCE_LOG : "schedules"
-    MEDICATION ||--o{ PREDICTION : "predicts"
-    
-    PATIENT_PROFILE {
-        int id
-        int user_id
-        int age
-        string medical_conditions
-        int caretaker_id
-    }
-    
-    MEDICATION {
-        int id
-        string name
-        string dosage
-        string frequency
-        json timings
-        boolean is_active
-    }
-    
-    ADHERENCE_LOG {
-        int id
-        datetime scheduled_time
-        datetime taken_time
-        string status
-    }
-    
-    PREDICTION {
-        int id
-        float predicted_delay
-        string risk_level
-        datetime generated_at
-    }
-```
-
----
-
-## 🚀 Quick Start
-
-### 1. Prerequisites
-- Docker (optional) OR Python 3.11, Node.js 20, and Android Studio.
-- Azure Form Recognizer Key (for OCR).
-
-### 2. Launch Backend
-```bash
-cd backend
-python -m venv venv && source venv/bin/activate
-pip install -r requirements.txt
-python manage.py migrate
-python manage.py seed_demo_data
-python manage.py runserver
-```
-
-### 3. Launch Frontend
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
----
-
-## 👨‍🎓 Final Year Project Details
-*This project was developed as a comprehensive healthcare solution for Final Year Engineering curriculum.*
-
-**Team Leads**: 
-- **Backend Architecture**: [Santoshi](https://github.com/santoshi004)
-- **Frontend/UI Experience**: [Ramya](https://github.com/ramyaS1205)
-- **Mobile Systems**: [Savita](https://github.com/Savita-debug)
-
----
-<p align="center">Made with ❤️ for Health Tech Excellence</p>
+*Technical documentation maintained by the MedAssist Engineering Team.*

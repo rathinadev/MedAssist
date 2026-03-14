@@ -1,81 +1,55 @@
-# 💻 MedAssist Frontend: Healthcare Dashboard
+# MedAssist Frontend: Client Architecture
 
-[![Next.js](https://img.shields.io/badge/Next.js-15.0+-black.svg?logo=next.js&logoColor=white)](https://nextjs.org/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-blue.svg?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![Tailwind](https://img.shields.io/badge/Tailwind-3.0+-blue.svg?logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
+The frontend is a high-performance web application built with **Next.js 15 (App Router)** and **TypeScript**. It serves as the primary data visualization and management portal.
 
-The frontend is the primary interface for **Caretakers (Doctors/Family)** and **Patients**. It transforms complex medical data and AI predictions into an intuitive, accessible experience.
+## 1. Architectural Patterns
 
----
+The application follows the modern Next.js folder structure, separating concerns between route-based components and shared logic.
 
-## 🌎 System Overview (The Big Picture)
+### Directory Structure
+- **`src/app/`**: Contains the App Router hierarchy.
+  - **`(dashboard)/caretaker/`**: Protected routes for health providers.
+  - **`(dashboard)/patient/`**: Simplified routes for end-users.
+- **`src/components/`**: Atomic design patterns.
+  - **`shared/`**: Common UI elements (Cards, Badges, Modals).
+  - **`ui/`**: Low-level primitives from `shadcn/ui`.
+- **`src/lib/`**: Core utilities including the API client and date formatting logic.
 
-MedAssist is a multi-component ecosystem. The Frontend depends on the Backend for data and AI processing.
+## 2. API Integration and State Management
 
-### Full System Architecture
-```mermaid
-graph TD
-    %% Clients
-    Web["Next.js Web (Caretaker)"]
-    App["Kotlin App (Patient)"]
+### Axios Interceptor Logic (`src/lib/api.ts`)
+The communication layer is managed via a centralized Axios instance with dual interceptors:
+1.  **Request Interceptor**: Automatically attaches the JWT `access_token` from local storage to every outgoing request's `Authorization` header.
+2.  **Response Interceptor (Token Refresh)**: If an API call fails with a `401 Unauthorized` status, the interceptor automatically attempts to use the `refresh_token` to get a new access key. If successful, it retries the original request seamlessly.
 
-    %% Backend
-    subgraph Core ["Django REST Backend"]
-        API["REST API Layer"]
-        DB[(PostgreSQL)]
-        ML["Random Forest Engine"]
-        OCR["Prescription Parser"]
-    end
+### Data Fetching
+- **Client-Side Rendering (CSR)**: Used for highly interactive dashboards where real-time adherence updates are frequent.
+- **Optimistic UI**: When a patient marks a medication as "Taken", the UI updates the stats immediately while the background API call is still processing, ensuring a zero-latency feel.
 
-    %% External
-    Azure["Azure Cloud AI"]
+## 3. Component Deep-Dive
 
-    %% Data Flow
-    Web -- "Manage Meds / Scan" --> API
-    App -- "Log Intake" --> API
-    API -- "Data Storage" --> DB
-    API -- "Behavior Risk" --> ML
-    API -- "Image Analysis" --> OCR
-    OCR -.-> Azure
+### Caretaker Monitoring Hub
+- **Risk Visualization**: Integrates with the backend's `predictions` API to render color-coded risk badges.
+- **D3/Chart.js Integration**: Visualizes patient adherence history over 30-day windows.
+- **OCR Reviewer**: A specialized component that allows caretakers to edit and confirm fields extracted by the backend's Azure AI service.
+
+### Patient Simplified UI
+- **Large-Scale UI**: Designed for elderly accessibility with high-contrast elements and simplified navigation.
+- **Status Filtering**: Dynamically filters the `TodaySchedule` into Taken, Late, and Missed categories for clear task prioritization.
+
+## 4. Security & Authentication
+
+- **Middleware Protection**: Routes are guarded by `middleware.ts` which checks for valid session tokens before allowing access to the dashboard.
+- **Role-Based Routing**: Users are automatically redirected to either `/caretaker` or `/patient` based on the role stored in their JWT payload.
+
+## 5. Development Setup
+
+```bash
+npm install
+npm run dev
 ```
 
-### The "MedAssist Cycle"
-1. **Management**: A caretaker signs in and scans a physical prescription.
-2. **Analysis**: The frontend displays the OCR results for verification.
-3. **Monitoring**: The caretaker views the **Patient Detail Page**, which pulls AI-calculated risk levels from the backend.
-4. **Adherence**: The patient uses the dashboard or the mobile app to log their daily intake, which is then charted in real-time.
+**Environment Configuration**: Ensure `NEXT_PUBLIC_API_URL` points to your running Django server.
 
 ---
-
-## 🎨 Design Philosophy
-- **Accessibility First**: Large font sizes, high-contrast badges, and simple navigation paths for elderly patients.
-- **Predictive Visualization**: High-risk patients are flagged with "Red" alerts immediately on the dashboard using backend AI data.
-- **Micro-Interactions**: Real-time feedback and toast notifications for all medication logging actions.
-
----
-
-## 🏗 Frontend Structure
-- **`src/app/(dashboard)/caretaker`**: Complex monitoring tools and patient management.
-- **`src/app/(dashboard)/patient`**: Simplified schedule view and personal history.
-- **`src/components/shared`**: Reusable healthcare components (Prescription Scanner, Medication Cards).
-
----
-
-## 🚀 Setup & Installation
-
-1. Install dependencies:
-   ```bash
-   npm install
-   ```
-2. Configure Environment:
-   Create a `.env.local` file:
-   ```
-   NEXT_PUBLIC_API_URL=http://localhost:8000/api
-   ```
-3. Start the UI:
-   ```bash
-   npm run dev
-   ```
-
----
-<p align="center">Part of the MedAssist Final Year Project Ecosystem</p>
+*Technical Lead: Ramya*
