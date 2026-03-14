@@ -46,8 +46,8 @@ Unlike standard timers, `AlarmManager` communicates directly with the Android OS
 
 ## 7. Technical Implementation Guides
 
-- [**Sync & Alarm Logic**](../docs/technical-guides/mobile-architecture-sync.md): Room DB and AlarmManager mechanics.
-- [**Data Mapping**](../docs/technical-guides/data-dictionary.md): Mobile to API field mapping.
+- [**Sync & Alarm Logic**](./docs/technical-guides/mobile-architecture-sync.md): Room DB and AlarmManager mechanics.
+- [**Data Mapping**](./docs/technical-guides/data-dictionary.md): Mobile to API field mapping.
 
 ---
 *Technical Lead: Savita*

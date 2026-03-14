@@ -53,8 +53,8 @@ npm run dev
 
 ## 6. Technical Implementation Guides
 
-- [**Data Flow Mapping**](../docs/technical-guides/data-dictionary.md): UI to Backend field mapping.
-- [**The Scan Lifecycle**](../docs/technical-guides/prescription-flow-trace.md): OCR review and validation flow.
+- [**Data Flow Mapping**](./docs/technical-guides/data-dictionary.md): UI to Backend field mapping.
+- [**The Scan Lifecycle**](./docs/technical-guides/prescription-flow-trace.md): OCR review and validation flow.
 
 ---
 *Technical Lead: Ramya*
