@@ -75,7 +75,19 @@ class PredictionListView(APIView):
             predictions = latest
 
         serializer = PredictionSerializer(predictions, many=True)
-        return Response({'predictions': serializer.data})
+        
+        # Calculate overall risk
+        overall_risk = 'low'
+        if any(p.risk_level == 'high' for p in (latest if connection.vendor != 'postgresql' else predictions)):
+            overall_risk = 'high'
+        elif any(p.risk_level == 'medium' for p in (latest if connection.vendor != 'postgresql' else predictions)):
+            overall_risk = 'medium'
+
+        return Response({
+            'predictions': serializer.data,
+            'overall_risk': overall_risk,
+            'patient_id': patient.id
+        })
 
 
 class GeneratePredictionView(APIView):

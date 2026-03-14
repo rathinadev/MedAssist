@@ -39,8 +39,8 @@ class Medication(models.Model):
     )
 
     name = models.CharField(max_length=255)
-    dosage = models.CharField(max_length=100)
-    frequency = models.CharField(max_length=20, choices=FREQUENCY_CHOICES)
+    dosage = models.CharField(max_length=100, blank=True, null=True, default='')
+    frequency = models.CharField(max_length=100, blank=True, null=True, default='')
     timings = models.JSONField(
         default=list,
         help_text='List of time strings, e.g. ["08:00", "20:00"]',

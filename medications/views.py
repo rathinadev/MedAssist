@@ -142,6 +142,13 @@ class MedicationViewSet(viewsets.ModelViewSet):
             return [permissions.IsAuthenticated(), IsCaretaker()]
         return [permissions.IsAuthenticated()]
 
+    def perform_create(self, serializer):
+        try:
+            serializer.save()
+        except Exception as e:
+            print(f"ERROR SAVING MEDICATION: {e}")
+            raise e
+
     def perform_destroy(self, instance):
         """Soft delete - set is_active to False."""
         instance.is_active = False

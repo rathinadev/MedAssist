@@ -60,6 +60,7 @@ class AdherenceStatsSerializer(serializers.Serializer):
     adherence_rate = serializers.FloatField()
     current_streak = serializers.IntegerField()
     longest_streak = serializers.IntegerField()
+    best_streak = serializers.IntegerField(source='longest_streak')
 
 
 class ScheduleEntrySerializer(serializers.Serializer):

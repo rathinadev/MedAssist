@@ -48,6 +48,16 @@ class PrescriptionScanView(APIView):
         # Run OCR
         extracted_data = extract_prescription_data(image)
 
+        # Print for feedback (as requested)
+        print("\n" + "="*50)
+        print(f"PRESCRIPTION SCANNED FOR: {patient_user.name} ({patient_user.email})")
+        print(f"DOCTOR: {extracted_data.get('doctor_name', 'Unknown')}")
+        print(f"DATE: {extracted_data.get('date', 'Unknown')}")
+        print("MEDICATIONS EXTRACTED:")
+        for med in extracted_data.get('medications', []):
+            print(f" - {med.get('name')}: {med.get('dosage')} ({med.get('frequency')})")
+        print("="*50 + "\n")
+
         # Save prescription
         prescription = Prescription.objects.create(
             image=image,

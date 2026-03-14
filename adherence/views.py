@@ -232,13 +232,16 @@ class TodayScheduleView(APIView):
         existing_logs = AdherenceLog.objects.filter(
             patient=patient_user,
             scheduled_time__range=(today_start, today_end),
-        ).values_list('medication_id', 'scheduled_time', 'status')
+        ).values_list('medication_id', 'scheduled_time', 'status', 'taken_time')
 
         # Build a lookup: (medication_id, scheduled_time_str) -> status
         log_lookup = {}
-        for med_id, sched_time, log_status in existing_logs:
+        for med_id, sched_time, log_status, t_time in existing_logs:
             time_key = sched_time.strftime('%H:%M')
-            log_lookup[(med_id, time_key)] = log_status
+            log_lookup[(med_id, time_key)] = {
+                'status': log_status,
+                'taken_time': t_time.isoformat() if t_time else None
+            }
 
         schedule = []
         for med in medications:
@@ -251,17 +254,23 @@ class TodayScheduleView(APIView):
                 except (ValueError, TypeError):
                     continue
 
-                log_status = log_lookup.get((med.id, timing_str), 'pending')
+                log_data = log_lookup.get((med.id, timing_str), {'status': 'pending', 'taken_time': None})
                 schedule.append({
-                    'medication_id': med.id,
-                    'medication_name': med.name,
-                    'dosage': med.dosage,
+                    'medication': {
+                        'id': med.id,
+                        'name': med.name,
+                        'dosage': med.dosage,
+                    },
                     'scheduled_time': scheduled_dt.isoformat(),
                     'instructions': med.instructions,
-                    'status': log_status,
+                    'status': log_data['status'],
+                    'taken_time': log_data['taken_time'],
                 })
 
         # Sort by scheduled time
         schedule.sort(key=lambda x: x['scheduled_time'])
 
-        return Response({'schedule': schedule})
+        return Response({
+            'date': today.isoformat(),
+            'medications': schedule
+        })

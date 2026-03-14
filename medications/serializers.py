@@ -108,6 +108,10 @@ class MedicationCreateUpdateSerializer(serializers.ModelSerializer):
             "created_at",
         )
         read_only_fields = ("id", "created_at")
+        extra_kwargs = {
+            'dosage': {'allow_null': True, 'required': False},
+            'frequency': {'allow_null': True, 'required': False},
+        }
 
     def validate_patient_id(self, value):
         from accounts.models import User
@@ -128,10 +132,14 @@ class MedicationCreateUpdateSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         from accounts.models import User
-
-        validated_data["patient"] = User.objects.get(id=validated_data.pop("patient_id"))
-        validated_data["created_by"] = self.context["request"].user
-        return super().create(validated_data)
+        try:
+            validated_data["patient"] = User.objects.get(id=validated_data.pop("patient_id"))
+            validated_data["created_by"] = self.context["request"].user
+            return super().create(validated_data)
+        except Exception as e:
+            print(f"SERIALIZER CREATE ERROR: {e}")
+            print(f"VALIDATED DATA: {validated_data}")
+            raise e
 
     def update(self, instance, validated_data):
         if "patient_id" in validated_data:
