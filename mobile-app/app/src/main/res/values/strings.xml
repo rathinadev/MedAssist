@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">MedAssist</string>
+    <string name="login">Login</string>
+    <string name="register">Register</string>
+    <string name="email">Email</string>
+    <string name="password">Password</string>
+    <string name="name">Full Name</string>
+    <string name="phone">Phone Number</string>
+    <string name="role">Role</string>
+    <string name="patient">Patient</string>
+    <string name="caretaker">Caretaker</string>
+    <string name="no_account">Don\'t have an account? Register</string>
+    <string name="have_account">Already have an account? Login</string>
+    <string name="dashboard">Dashboard</string>
+    <string name="medications">Medications</string>
+    <string name="history">History</string>
+    <string name="scan">Scan</string>
+    <string name="patients">Patients</string>
+    <string name="predictions">Predictions</string>
+    <string name="take_medication">Take</string>
+    <string name="mark_as_taken">Mark as Taken</string>
+    <string name="medication_reminder">Medication Reminder</string>
+    <string name="time_to_take">Time to take %1$s - %2$s</string>
+    <string name="loading">Loading...</string>
+    <string name="error_occurred">An error occurred</string>
+    <string name="retry">Retry</string>
+    <string name="no_medications">No medications yet</string>
+    <string name="no_patients">No patients yet</string>
+    <string name="logout">Logout</string>
+    <string name="add_medication">Add Medication</string>
+    <string name="add_patient">Add Patient</string>
+    <string name="save">Save</string>
+    <string name="cancel">Cancel</string>
+    <string name="notification_channel_name">Medication Reminders</string>
+    <string name="notification_channel_description">Notifications for medication reminders</string>
+</resources>
