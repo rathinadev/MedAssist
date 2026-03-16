@@ -76,5 +76,23 @@ MedAssist does not store a "Tomorrow" schedule. It builds it on-the-fly when req
 | `missed` | `> 4 hours after` | Dose completely skipped. Triggers high-risk flag. |
 
 ---
+## 5. AI Laboratory: Hybrid Intelligence Engine
+**Reference**: `backend/predictions/services/ml_service.py` -> `_rule_based_prediction` & `views.py`
+
+In the AI Lab, we utilize a **Hybrid Intelligence** approach to compensate for small datasets during demonstration. 
+
+### The Feature Vector (17 Features):
+The AI model processes a 17-dimensional vector for every patient-medication pair:
+- **Baseline Metrics**: Hour of day, Day of week, Medication type.
+- **Behavioral Metrics**: Consecutive misses (count), Miss Rate (float).
+- **The 17th Feature**: `weighted_adherence` (calculated via the Time-Decay formula).
+
+### Hybrid Decision Logic:
+To ensure the demo remains sensitive to high-risk behavior even when the Random Forest is "conservative," we use the following hierarchy:
+1. **Clinical Engine (First Pass)**: Checks if `weighted_adherence < 45%` or `consecutive_misses >= 4`. If so, flags **HIGH RISK** immediately as a safety net.
+2. **ML Random Forest (Second Pass)**: Analyzes historical patterns. If the ML model detects a risk level *higher* than the clinical rules, it overwrites the classification to trust the AI's pattern recognition.
+
+---
+
 ### Technical Summary for Student Presenters:
-> "Our logic is derived asynchronously. Instead of storing complex schedules, we store 'Patterns' (Timings) and 'Events' (Logs). This allows us to calculate health metrics like 'Streaks' dynamically, ensuring the data is always mathematically sound regardless of timezone or day shifts."
+> "Our system uses a **Hybrid Intelligence** architecture. We don't just 'blindly' trust an ML model trained on limited data. Instead, we use a Clinical Ruleset as a deterministic ground-truth, which is then augmented by a **17-feature Random Forest** that learns to identify abandonment patterns before they become critical."

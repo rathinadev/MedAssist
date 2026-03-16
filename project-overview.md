@@ -67,11 +67,19 @@ The system uses OCR to extract medication details from prescription images and a
 - Statistics: adherence rate, current streak, best streak, most missed medication
 - History view with date range filtering
 
+### AI Intelligence Laboratory (Pro Demo)
+- **Neural Execution Path**: A premium interactive tool at `/caretaker/ml-playground` that visualizes AI decision-making.
+- **Explainability Visuals**: Uses **Animated SVG flow** to show behavioral data (History, Delay, Frequency) moving through decision nodes.
+- **Hybrid Inference**: Combines RandomForest outcomes with high-sensitivity clinical rules for reliable demonstration.
+- **Sandbox Isolation**: Features a 100% data-safe sandbox for educational trainers to simulate "What-If" scenarios without impacting clinical data.
+
+![AI Intelligence Lab Dashboard](/home/rathina-devan/.gemini/antigravity/brain/31b1163c-7996-4a20-ae36-dc529854148c/ai_lab_high_risk_dashboard_1773662020239.png)
+*Figure 1: The AI Intelligence Lab demonstrating a high-risk patient trajectory.*
+
 ### ML Behavior Prediction
-- 16 engineered features per patient-medication pair (avg delay, miss rate, day-of-week patterns, time-of-day patterns, consecutive misses)
-- RandomForestClassifier for risk level (low/medium/high)
-- RandomForestRegressor for predicted delay in minutes
-- Caretaker sees risk alerts and predicted behavior on patient detail page
+- **17 Engineered Features**: Now includes `weighted_adherence` as a primary indicator of behavioral drift.
+- **RandomForestClassifier**: predicts risk level (low/medium/high).
+- **RandomForestRegressor**: predicts expected delay in minutes for the next dose.
 
 ### System Notifications & Voice
 - **WebPush Protocol**: Desktop and Mobile Web receive native push alerts via VAPID.
