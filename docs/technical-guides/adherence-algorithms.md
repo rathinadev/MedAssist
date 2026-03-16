@@ -9,13 +9,17 @@ This document explains the deep numerical logic used to calculate patient health
 
 The score is a cumulative metric representing overall compliance.
 
-### The Math:
+### The Math (Time-Weighted Decay):
 1. **Fetch Logs**: Filter `AdherenceLog` by the specific `patient`.
-2. **Success Count**: Count all entries where `status` is either `taken` OR `late`.
-3. **Total Count**: Count *all* entries in the log history.
-4. **Percentage**: `(Success / Total) * 100`.
+2. **Scoring**:
+    - **On-Time (`taken`)**: 1.0 (100% Credit).
+    - **Late (`late`)**: `max(0.4, 1.0 - (hours_late / 10))`.
+        - Penalty increases linearly with delay.
+        - Minimum credit of 40% for actually taking the medication.
+    - **Missed (`missed`)**: 0.0 (0% Credit).
+3. **Percentage**: `(TotalScore / TotalLogs) * 100`.
 
-*Developer Note: We count "Late" as a success for the general rate because the medication was still consumed, but it is penalized in the "Risk Prediction" ML model.*
+*Developer Note: This ensures "slightly late" and "very late" have different impacts on the patient's score, encouraging punctuality while rewarding compliance.*
 
 ---
 
