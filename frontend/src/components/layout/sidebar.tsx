@@ -10,6 +10,7 @@ import {
   CalendarDays,
   History,
   X,
+  Microscope,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -24,6 +25,7 @@ const caretakerNav = [
   { label: "Dashboard", href: "/caretaker", icon: LayoutDashboard },
   { label: "Patients", href: "/caretaker/patients", icon: Users },
   { label: "Scan Prescription", href: "/caretaker/scan", icon: ScanLine },
+  { label: "AI Lab", href: "/caretaker/ml-playground", icon: Microscope },
 ];
 
 const patientNav = [
