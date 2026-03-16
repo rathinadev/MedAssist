@@ -30,7 +30,18 @@ Students should focus on the **Repository Pattern** used here.
 
 ---
 
-## 3. Persistent Alarm Scheduling
+## 3. Remote Alert Synchronization (WorkManager)
+**Worker**: `com.medassist.app.worker.RemoteAlertWorker`
+
+We use **WorkManager** to handle background tasks that must succeed even if the app is killed.
+
+1. **The Sync**: Runs every 15 minutes.
+2. **Function**: Polls `/api/adherence/reminders/` for any missed dose alerts.
+3. **Audible Alert**: Initializes the Android `TextToSpeech` engine to read the alert text aloud.
+
+---
+
+## 4. Persistent Alarm Scheduling
 **Files**: `com.medassist.app.util.AlarmScheduler`
 
 Android's "Power Management" often kills background tasks. We use the **AlarmManager** to bypass this.

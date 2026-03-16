@@ -40,7 +40,8 @@ The system uses OCR to extract medication details from prescription images and a
 | Machine Learning | scikit-learn (RandomForest) | Adherence behavior prediction |
 | Web Frontend | Next.js 14 + TypeScript + Tailwind CSS + shadcn/ui | Caretaker & patient web dashboard |
 | Mobile App | Kotlin + Jetpack Compose + Retrofit + Room | Android app with offline support |
-| Notifications | AlarmManager + local notifications | Medication reminders on Android |
+| Notifications | django-webpush + WorkManager | Universal WebPush & Background Sync |
+| Voice Support | Web Speech API + Android TTS | Local audible reminders (no MP3) |
 
 ## Key Features
 
@@ -62,6 +63,7 @@ The system uses OCR to extract medication details from prescription images and a
 ### Adherence Tracking
 - Patient marks medications as taken from dashboard or notification
 - Tracks taken/missed/late status for every scheduled dose
+- **Standardized Weighted Logic**: Adherence rate uses a "Time-Decay" formula (100% for on-time, 40-100% for late based on delay).
 - Statistics: adherence rate, current streak, best streak, most missed medication
 - History view with date range filtering
 
@@ -71,9 +73,10 @@ The system uses OCR to extract medication details from prescription images and a
 - RandomForestRegressor for predicted delay in minutes
 - Caretaker sees risk alerts and predicted behavior on patient detail page
 
-### Mobile Reminders
-- AlarmManager schedules exact alarms for each pending medication
-- Notification with "Mark as Taken" action button
+### System Notifications & Voice
+- **WebPush Protocol**: Desktop and Mobile Web receive native push alerts via VAPID.
+- **Audible Alerts**: Local TTS speaks medication names (e.g., "Time for your Amoxicillin").
+- **WorkManager Sync**: Android app syncs reminders every 15 mins even when closed.
 - Alarms survive device reboot (BootReceiver)
 
 ### Offline Support (Mobile)
