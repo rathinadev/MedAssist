@@ -73,7 +73,7 @@ The system uses OCR to extract medication details from prescription images and a
 - **Hybrid Inference**: Combines RandomForest outcomes with high-sensitivity clinical rules for reliable demonstration.
 - **Sandbox Isolation**: Features a 100% data-safe sandbox for educational trainers to simulate "What-If" scenarios without impacting clinical data.
 
-![AI Intelligence Lab Dashboard](/home/rathina-devan/.gemini/antigravity/brain/31b1163c-7996-4a20-ae36-dc529854148c/ai_lab_high_risk_dashboard_1773662020239.png)
+![AI Intelligence Lab Dashboard](./docs/assets/ai_lab_demo.png)
 *Figure 1: The AI Intelligence Lab demonstrating a high-risk patient trajectory.*
 
 ### ML Behavior Prediction
