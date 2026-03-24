@@ -4,20 +4,30 @@ This document explains the deep numerical logic used to calculate patient health
 
 ---
 
-## 1. The Adherence Score Logic
-**Reference**: `backend/medications/serializers.py` -> `get_adherence_rate()`
+## 1. The Adherence Score Logic (Refined Time-Decay)
+**Reference**: `backend/adherence/utils/rates.py` -> `calculate_adherence_rate()`
 
-The score is a cumulative metric representing overall compliance.
+Adherence in MedAssist isn't just binary; it uses a **Continuous Decay Function** to represent the clinical impact of late doses.
 
-### The Math (Time-Weighted Decay):
-1. **Fetch Logs**: Filter `AdherenceLog` by the specific `patient`.
-2. **Scoring**:
-    - **On-Time (`taken`)**: 1.0 (100% Credit).
-    - **Late (`late`)**: `max(0.4, 1.0 - (hours_late / 10))`.
-        - Penalty increases linearly with delay.
-        - Minimum credit of 40% for actually taking the medication.
-    - **Missed (`missed`)**: 0.0 (0% Credit).
-3. **Percentage**: `(TotalScore / TotalLogs) * 100`.
+### The Math (Linear Decay Formula):
+1. **Dose Credit**:
+    - **Penalty Calculation**: `penalty = hours_late * 0.1` (10% credit drop per hour delay).
+    - **Score Calculation**: `score = max(0.4, 1.0 - penalty)`.
+    - **Result**: Taking a medication 1 hour late yields **90% credit**; taking it 4+ hours late yields a floor of **40% credit** (clinical value of actually taking the drug).
+2. **Cumulative Rate**: `(Sum of Scores / Total Expected Doses) * 100`.
+
+---
+
+## 6. Audible Reminder System (Zero-Cost Architecture)
+**Reference**: `frontend/sw.js` (Web) & `RemoteAlertWorker.kt` (Mobile)
+
+To ensure maximum accessibility without recurring cloud costs (e.g., Google Cloud TTS), MedAssist uses **Local Speech Engines**.
+
+### Multi-Platform Implementation:
+- **Desktop (Web Speech API)**: Uses `window.speechSynthesis`. When a background Service Worker receives a VAPID push message, it transmits a `SPEAK_REMINDER` signal to the dashboard.
+- **Mobile (Android TTS)**: Uses `android.speech.tts.TextToSpeech`. The background `RemoteAlertWorker` polls the adherence endpoint and triggers the local Android engine directly, even when the app is closed.
+
+---
 
 *Developer Note: This ensures "slightly late" and "very late" have different impacts on the patient's score, encouraging punctuality while rewarding compliance.*
 

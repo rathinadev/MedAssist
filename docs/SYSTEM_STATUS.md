@@ -5,13 +5,13 @@ This report summarizes the current evolution of the MedAssist system, highlighti
 ## 🟢 What We Have (The "Wins")
 
 ### 1. The Adaptive Brain (AI/ML)
-*   **Weighted Adherence Engine**: Moved beyond a simple "Pass/Fail" binary. Our system now calculates adherence using a **Time-Decay Formula** (1.0 for on-time, 0.4–1.0 for late). This provides a granular health metric that mirrors real human behavior.
-*   **AI Intelligence Lab**: A high-fidelity interactive dashboard for clinical demonstrations. It visualizes the "Neural Execution Path" of our RandomForest models, making "Black Box" AI transparent for educators.
-*   **Hybrid Intelligence**: A safety-first architecture that combines probabilistic ML outcomes with deterministic clinical rules to ensure zero false negatives for high-risk patients.
+*   **Weighted Adherence Engine**: Moved beyond a simple "Pass/Fail" binary. Our system now calculates adherence using a **Linear Decay Formula** (`max(0.4, 1.0 - (hours_late * 0.1))`). This provides a granular health metric that mirrors real clinical impact.
+*   **AI Intelligence Lab**: A high-fidelity interactive dashboard for clinical demonstrations. It visualizes the "Neural Execution Path" of our 17-feature RandomForest models, making "Black Box" AI transparent for educators.
+*   **Hybrid Intelligence**: A safety-first architecture that combines probabilistic ML outcomes with deterministic clinical rules to ensure zero false negatives.
 
 ### 2. Universal Notification & Voice System
 *   **Proprietary-Free WebPush**: Integrated a universal notification layer using VAPID keys, removing reliance on proprietary services like Firebase.
-*   **Audible Alerts (TTS)**: Native voice synthesis on both Web and Android. The system "speaks" medication names, increasing accessibility for elderly patients with visual impairments.
+*   **Audible Alerts (Zero-Cost TTS)**: Uses native voice synthesis on both Web (Speech API) and Android (TTS Engine). The system "speaks" medication names locally, avoiding 3rd-party API costs.
 *   **Mobile Background Resilience**: Implemented WorkManager for background synchronization. Reminders and alarms persist even if the device reboots or the app is closed.
 
 ### 3. Integrated Diagnostics

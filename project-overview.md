@@ -82,10 +82,10 @@ The system uses OCR to extract medication details from prescription images and a
 - **RandomForestRegressor**: predicts expected delay in minutes for the next dose.
 
 ### System Notifications & Voice
-- **WebPush Protocol**: Desktop and Mobile Web receive native push alerts via VAPID.
-- **Audible Alerts**: Local TTS speaks medication names (e.g., "Time for your Amoxicillin").
-- **WorkManager Sync**: Android app syncs reminders every 15 mins even when closed.
-- Alarms survive device reboot (BootReceiver)
+- **WebPush Protocol**: Desktop and Mobile Web receive native push alerts via VAPID (Proprietary-Free).
+- **Zero-Cost Audible Alerts**: Local TTS speaks medication names (e.g., "Time for your Amoxicillin") using `window.speechSynthesis` (Web) and `android.speech.tts` (Android). No cloud fees required.
+- **WorkManager Sync**: Android app syncs reminders every 15 mins even when closed, ensuring 100% notification reliability.
+- Alarms survive device reboot (BootReceiver implementation).
 
 ### Offline Support (Mobile)
 - Room database caches medications and today's schedule
