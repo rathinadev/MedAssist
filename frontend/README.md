@@ -36,8 +36,8 @@ The communication layer is managed via a centralized Axios instance with dual in
 ### Patient Simplified UI
 - **Large-Scale UI**: Designed for elderly accessibility with high-contrast elements and simplified navigation.
 - **Status Filtering**: Dynamically filters the `TodaySchedule` into Taken, Late, and Missed categories for clear task prioritization.
-- **Audible Alerts**: Integrated Web Speech API for dashboard voice notifications.
-- **Universal WebPush**: Service Worker (`sw.js`) implementation for background alerts even when the browser is closed.
+- **Audible Alerts (Local TTS)**: Integrated **Web Speech API** for dashboard voice notifications (Zero-Cost). The UI speaks medication names directly via the browser's native engine.
+- **Universal WebPush**: Service Worker (`sw.js`) implementation for background alerts using **VAPID keys** (no Firebase required).
 
 ## 4. Security & Authentication
 

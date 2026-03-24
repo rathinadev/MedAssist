@@ -25,7 +25,7 @@ Unlike standard timers, `AlarmManager` communicates directly with the Android OS
 
 ### BroadcastReceivers
 - **`MedicationAlarmReceiver`**: Triggered by the OS when a dose is due. It builds and displays a high-priority system notification.
-- **`RemoteAlertWorker`**: Uses WorkManager to perform background sync every 15 minutes, fetching remote alerts and triggering local Text-to-Speech (TTS).
+- **`RemoteAlertWorker`**: Uses **WorkManager** to perform background sync every 15 minutes. It fetches remote adherence alerts and triggers the local **Android Text-to-Speech (TTS)** engine to speak reminders out loud.
 - **`BootReceiver`**: Listens for the `ACTION_BOOT_COMPLETED` system event. This allows the app to automatically reschedule all medication alarms and workers if the user's phone is restarted.
 
 ## 4. Networking and Security
