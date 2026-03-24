@@ -6,6 +6,7 @@ import android.util.Log
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.medassist.app.MedAssistApp
+import com.medassist.app.BuildConfig
 import com.medassist.app.util.TokenManager
 import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
@@ -33,7 +34,7 @@ class RemoteAlertWorker(
             
             val client = OkHttpClient()
             val request = Request.Builder()
-                .url("${MedAssistApp.BASE_URL}/adherence/reminders/")
+                .url("${BuildConfig.BASE_URL}/adherence/reminders/")
                 .addHeader("Authorization", "Bearer $token")
                 .build()
 
