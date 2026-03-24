@@ -41,3 +41,13 @@ The app uses a single dashboard route structure but differentiates content based
 We use `useEffect` hooks combined with `axios` to fetch data on mount. 
 - **Loading States**: Every page uses a `loading` boolean to show a skeleton UI, preventing "Layout Shift" which can be confusing for elderly users.
 - **Effect Dependency**: Data is re-fetched whenever a medication is added or a scan is completed, ensuring the dashboard is always current.
+
+---
+
+## 5. Audible Reminders (Zero-Cost Logic)
+**File**: `sw.js` & `WebPushRegistration.tsx`
+
+To support elderly accessibility, the frontend integrates with the **Web Speech API**:
+1. **Background Listener**: The Service Worker (`sw.js`) listens for incoming push messages.
+2. **Signal Propagation**: When a message contains a `speech_text` payload, the SW sends a `postMessage` to all active windows.
+3. **Local Synthesis**: The `WebPushRegistration` component receives the message and triggers `window.speechSynthesis.speak()` locally.

@@ -45,3 +45,13 @@ If a user turns their phone off and on, normally all alarms are lost.
 
 ## 5. Security
 The app stores the JWT tokens in **Encrypted SharedPreferences**. This ensures that even if a phone is compromised, other apps cannot steal the medical access tokens.
+
+---
+
+## 6. Remote Sync & Voice Logic
+**File**: `RemoteAlertWorker.kt`
+
+To ensure the patient never misses a dose due to network drops, the app uses **WorkManager** for background polling:
+1. **The Worker**: Runs every 15 minutes to fetch missed adherence alerts from the API.
+2. **Audible Logic**: If an alert is found, the worker initializes the **Android Text-to-Speech (TTS)** engine.
+3. **Execution**: It speaks the reminder (e.g., *"Time for your Aspirin"*) even if the app is in the background or the screen is locked.
