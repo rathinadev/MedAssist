@@ -50,8 +50,11 @@ export default function WebPushRegistration() {
 
                 // Send subscription to backend
                 await axios.post('http://localhost:8000/webpush/save_information', {
-                    subscription: subscription,
-                    group: `user_${userId}`
+                    subscription: subscription.toJSON(),
+                    group: `user_${userId}`,
+                    status_type: 'subscribe',
+                    browser: navigator.userAgent.includes("Chrome") ? "Chrome" : "Firefox",
+                    user_agent: navigator.userAgent
                 }, {
                     headers: {
                         'Authorization': `Bearer ${localStorage.getItem('access_token')}`
