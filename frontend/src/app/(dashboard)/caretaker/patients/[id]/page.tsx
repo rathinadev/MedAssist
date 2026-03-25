@@ -74,7 +74,13 @@ const medicationSchema = z.object({
   instructions: z.string().optional(),
 });
 
+const profileSchema = z.object({
+  age: z.string().min(1, "Age is required"),
+  medical_conditions: z.string().optional(),
+});
+
 type MedicationValues = z.infer<typeof medicationSchema>;
+type ProfileValues = z.infer<typeof profileSchema>;
 
 export default function PatientDetailPage() {
   const params = useParams();
@@ -93,10 +99,11 @@ export default function PatientDetailPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [medDialogOpen, setMedDialogOpen] = useState(false);
+  const [profileDialogOpen, setProfileDialogOpen] = useState(false);
   const [editingMed, setEditingMed] = useState<Medication | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const form = useForm<MedicationValues>({
+  const medForm = useForm<MedicationValues>({
     resolver: zodResolver(medicationSchema),
     defaultValues: {
       name: "",
@@ -104,6 +111,14 @@ export default function PatientDetailPage() {
       frequency: "",
       timings: "",
       instructions: "",
+    },
+  });
+
+  const profileForm = useForm<ProfileValues>({
+    resolver: zodResolver(profileSchema),
+    defaultValues: {
+      age: "0",
+      medical_conditions: "",
     },
   });
 
@@ -173,7 +188,7 @@ export default function PatientDetailPage() {
 
   const openAddMedDialog = () => {
     setEditingMed(null);
-    form.reset({
+    medForm.reset({
       name: "",
       dosage: "",
       frequency: "",
@@ -185,7 +200,7 @@ export default function PatientDetailPage() {
 
   const openEditMedDialog = (med: Medication) => {
     setEditingMed(med);
-    form.reset({
+    medForm.reset({
       name: med.name,
       dosage: med.dosage,
       frequency: med.frequency,
@@ -236,7 +251,7 @@ export default function PatientDetailPage() {
         toast.success("Medication added");
       }
       setMedDialogOpen(false);
-      form.reset();
+      medForm.reset();
     } catch {
       toast.error(
         editingMed ? "Failed to update medication" : "Failed to add medication"
@@ -244,6 +259,34 @@ export default function PatientDetailPage() {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const onSubmitProfile = async (data: ProfileValues) => {
+    if (!patient) return;
+    setIsSubmitting(true);
+    try {
+      const payload = {
+        ...data,
+        age: parseInt(data.age, 10),
+      };
+      const res = await api.patch(`/patients/${patientId}/`, payload);
+      setPatient(res.data);
+      toast.success("Patient profile updated");
+      setProfileDialogOpen(false);
+    } catch {
+      toast.error("Failed to update patient profile");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const openEditProfileDialog = () => {
+    if (!patient) return;
+    profileForm.reset({
+      age: patient.age.toString(),
+      medical_conditions: patient.medical_conditions || "",
+    });
+    setProfileDialogOpen(true);
   };
 
   if (isLoading) {
@@ -283,7 +326,71 @@ export default function PatientDetailPage() {
 
       {/* Patient info card */}
       <Card>
-        <CardContent className="p-6">
+        <CardHeader className="pb-3 flex-row items-center justify-between space-y-0">
+          <div>
+            <CardTitle className="text-lg">Clinical Configuration</CardTitle>
+            <CardDescription>Patient demographics and medical history</CardDescription>
+          </div>
+          <Dialog open={profileDialogOpen} onOpenChange={setProfileDialogOpen}>
+            <DialogTrigger asChild>
+              <Button variant="outline" size="sm" onClick={openEditProfileDialog}>
+                Edit Profile
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Edit Patient Profile</DialogTitle>
+                <DialogDescription>
+                  Update demographic and clinical details for {patient.user.name}.
+                </DialogDescription>
+              </DialogHeader>
+              <Form {...profileForm}>
+                <form onSubmit={profileForm.handleSubmit(onSubmitProfile)} className="space-y-4">
+                  <FormField
+                    control={profileForm.control}
+                    name="age"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Age</FormLabel>
+                        <FormControl>
+                          <Input type="number" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={profileForm.control}
+                    name="medical_conditions"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Medical Conditions</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Diabetes, Hypertension..." {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <div className="flex justify-end gap-2 pt-4">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => setProfileDialogOpen(false)}
+                    >
+                      Cancel
+                    </Button>
+                    <Button type="submit" disabled={isSubmitting}>
+                      {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                      Save Changes
+                    </Button>
+                  </div>
+                </form>
+              </Form>
+            </DialogContent>
+          </Dialog>
+        </CardHeader>
+        <CardContent className="p-6 pt-0">
           <div className="grid gap-4 sm:grid-cols-3">
             <div>
               <p className="text-sm text-muted-foreground">Age</p>
@@ -338,13 +445,13 @@ export default function PatientDetailPage() {
                       : "Add a new medication for this patient."}
                   </DialogDescription>
                 </DialogHeader>
-                <Form {...form}>
+                <Form {...medForm}>
                   <form
-                    onSubmit={form.handleSubmit(onSubmitMed)}
+                    onSubmit={medForm.handleSubmit(onSubmitMed)}
                     className="space-y-4"
                   >
                     <FormField
-                      control={form.control}
+                      control={medForm.control}
                       name="name"
                       render={({ field }) => (
                         <FormItem>
@@ -357,7 +464,7 @@ export default function PatientDetailPage() {
                       )}
                     />
                     <FormField
-                      control={form.control}
+                      control={medForm.control}
                       name="dosage"
                       render={({ field }) => (
                         <FormItem>
@@ -370,7 +477,7 @@ export default function PatientDetailPage() {
                       )}
                     />
                     <FormField
-                      control={form.control}
+                      control={medForm.control}
                       name="frequency"
                       render={({ field }) => (
                         <FormItem>
@@ -408,7 +515,7 @@ export default function PatientDetailPage() {
                       )}
                     />
                     <FormField
-                      control={form.control}
+                      control={medForm.control}
                       name="timings"
                       render={({ field }) => (
                         <FormItem>
@@ -427,7 +534,7 @@ export default function PatientDetailPage() {
                       )}
                     />
                     <FormField
-                      control={form.control}
+                      control={medForm.control}
                       name="instructions"
                       render={({ field }) => (
                         <FormItem>
