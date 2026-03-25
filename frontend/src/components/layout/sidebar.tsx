@@ -11,7 +11,9 @@ import {
   History,
   X,
   Microscope,
+  Volume2,
 } from "lucide-react";
+import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 
@@ -95,7 +97,25 @@ export function Sidebar({ role, open, onClose }: SidebarProps) {
           })}
         </nav>
 
-        <div className="border-t border-sidebar-border px-4 py-3">
+        <div className="border-t border-sidebar-border px-4 py-4 space-y-4">
+          <Button
+            variant="outline"
+            size="sm"
+            className="w-full justify-start gap-2 bg-sidebar-primary/5 border-sidebar-primary/20 hover:bg-sidebar-primary/10 text-sidebar-primary"
+            onClick={() => {
+              if ('speechSynthesis' in window) {
+                const utterance = new SpeechSynthesisUtterance("MedAssist Voice System is active and ready.");
+                window.speechSynthesis.speak(utterance);
+                toast.success("Voice Engine Active");
+              } else {
+                toast.error("Speech Synthesis not supported");
+              }
+            }}
+          >
+            <Volume2 className="h-4 w-4" />
+            <span className="font-bold">Test Voice</span>
+          </Button>
+
           <div className="flex items-center gap-2 px-2">
             <CalendarDays className="h-4 w-4 text-sidebar-foreground/50" />
             <span className="text-xs text-sidebar-foreground/50">

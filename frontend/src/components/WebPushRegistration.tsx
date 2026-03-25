@@ -36,13 +36,20 @@ export default function WebPushRegistration() {
             // Request permission
             const permission = await Notification.requestPermission();
             if (permission === 'granted') {
+                // CLEAR OLD SUBSCRIPTIONS (This fixes the 'AbortError' often)
+                const oldSubscription = await registration.pushManager.getSubscription();
+                if (oldSubscription) {
+                    await oldSubscription.unsubscribe();
+                    console.log('Cleared old subscription');
+                }
+
                 const subscription = await registration.pushManager.subscribe({
                     userVisibleOnly: true,
                     applicationServerKey: urlBase64ToUint8Array(PUBLIC_VAPID_KEY)
                 });
 
                 // Send subscription to backend
-                await axios.post('http://localhost:8002/webpush/save/', {
+                await axios.post('http://localhost:8000/webpush/save_information', {
                     subscription: subscription,
                     group: `user_${userId}`
                 }, {
