@@ -6,10 +6,10 @@ MedAssist is an integrated healthcare platform designed to enhance medication ad
 
 ## 🌟 Vision & Objectives
 Elderly patients frequently struggle with complex medication schedules. MedAssist closes the oversight gap by providing:
-- **Zero-Cost Voice Alerts**: Local TTS reminders on both Web and Android.
+- **Universal Voice Engine**: Zero-cost audible reminders via the Web Speech API and Android TTS.
 - **Predictive Risk Modeling**: AI that identifies potential non-adherence before it happens.
 - **Interactive AI Lab**: A visual playground for caretakers to understand AI decision-making.
-- **Universal Synchronization**: Real-time status updates across Web and Mobile.
+- **Live Monitor**: Continuous background monitoring for real-time medication triggers.
 
 ## 🏗️ System Architecture
 
@@ -75,6 +75,7 @@ python3 manage.py check_reminders --loop
 | **Frontend** | Patient/Caretaker Web Dashboards | [Frontend README](./frontend/README.md) |
 | **Mobile App** | Kotlin companion with offline sync | [Mobile README](./mobile-app/README.md) |
 | **AI Lab** | Visual analytics and predictivity | [AI Lab Walkthrough](./docs/AI_LAB_WALKTHROUGH.md) |
+| **Voice System** | Audible Alert Engine Architecture | [VOICE_SYSTEM.md](./docs/VOICE_SYSTEM.md) |
 | **Deployment** | Production & Server configuration | [DEPLOYMENT.md](./DEPLOYMENT.md) |
 
 ---
