@@ -5,11 +5,11 @@ const nextConfig: NextConfig = {
     return [
       {
         source: "/api/webpush/save_information",
-        destination: `${process.env.AWS_BACKEND_URL || "http://localhost:8000"}/webpush/save_information/`,
+        destination: `${process.env.AWS_BACKEND_URL || "http://localhost:8000"}/webpush/save_information`,
       },
       {
         source: "/api/webpush/save_information/",
-        destination: `${process.env.AWS_BACKEND_URL || "http://localhost:8000"}/webpush/save_information/`,
+        destination: `${process.env.AWS_BACKEND_URL || "http://localhost:8000"}/webpush/save_information`,
       },
       {
         source: "/api/:path*",
