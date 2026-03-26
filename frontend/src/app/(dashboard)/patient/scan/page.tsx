@@ -30,7 +30,7 @@ export default function PatientScanPage() {
             (p: { user: { email: string } }) => p.user.email === user.email
           );
           if (myProfile) {
-            setPatientId(myProfile.id);
+            setPatientId(myProfile.user.id);
           }
         }
       } catch {
