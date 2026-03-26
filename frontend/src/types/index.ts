@@ -90,10 +90,12 @@ export interface AdherenceLog {
 
 export interface AdherenceHistory {
   logs: AdherenceLog[];
-  total: number;
-  taken: number;
-  missed: number;
-  late: number;
+  summary: {
+    total: number;
+    taken: number;
+    missed: number;
+    late: number;
+  };
 }
 
 export interface AdherenceStats {

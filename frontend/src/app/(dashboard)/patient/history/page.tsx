@@ -90,16 +90,16 @@ export default function PatientHistoryPage() {
   };
 
   const takenPct =
-    history && history.total > 0
-      ? Math.round((history.taken / history.total) * 100)
+    history && history.summary.total > 0
+      ? Math.round((history.summary.taken / history.summary.total) * 100)
       : 0;
   const missedPct =
-    history && history.total > 0
-      ? Math.round((history.missed / history.total) * 100)
+    history && history.summary.total > 0
+      ? Math.round((history.summary.missed / history.summary.total) * 100)
       : 0;
   const latePct =
-    history && history.total > 0
-      ? Math.round((history.late / history.total) * 100)
+    history && history.summary.total > 0
+      ? Math.round((history.summary.late / history.summary.total) * 100)
       : 0;
 
   return (
@@ -147,7 +147,7 @@ export default function PatientHistoryPage() {
           <Card>
             <CardContent className="p-4 text-center">
               <p className="text-sm text-muted-foreground">Total Logs</p>
-              <p className="text-2xl font-bold">{history.total}</p>
+              <p className="text-2xl font-bold">{history.summary.total}</p>
             </CardContent>
           </Card>
           <Card>
@@ -157,7 +157,7 @@ export default function PatientHistoryPage() {
                 <p className="text-sm text-muted-foreground">Taken</p>
               </div>
               <p className="text-2xl font-bold text-green-600">
-                {history.taken}
+                {history.summary.taken}
               </p>
               <p className="text-xs text-muted-foreground">{takenPct}%</p>
             </CardContent>
@@ -169,7 +169,7 @@ export default function PatientHistoryPage() {
                 <p className="text-sm text-muted-foreground">Missed</p>
               </div>
               <p className="text-2xl font-bold text-red-600">
-                {history.missed}
+                {history.summary.missed}
               </p>
               <p className="text-xs text-muted-foreground">{missedPct}%</p>
             </CardContent>
@@ -181,7 +181,7 @@ export default function PatientHistoryPage() {
                 <p className="text-sm text-muted-foreground">Late</p>
               </div>
               <p className="text-2xl font-bold text-yellow-600">
-                {history.late}
+                {history.summary.late}
               </p>
               <p className="text-xs text-muted-foreground">{latePct}%</p>
             </CardContent>
