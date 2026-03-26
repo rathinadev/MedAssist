@@ -2,7 +2,6 @@
 
 self.addEventListener('push', function (event) {
     const data = event.data.json();
-    console.log('[SW] Push Received', data);
     const title = data.head || "MedAssist Alert";
     const body = data.body || "You have a new reminder.";
     const speechText = data.speech_text;
@@ -23,9 +22,7 @@ self.addEventListener('push', function (event) {
 
     event.waitUntil(
         self.registration.showNotification(title, options).then(() => {
-            console.log('[SW] Notification Shown, messaging clients...');
             return self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(clients => {
-                console.log(`[SW] Found ${clients.length} clients`);
                 clients.forEach(client => {
                     client.postMessage({
                         type: 'SPEAK_REMINDER',
