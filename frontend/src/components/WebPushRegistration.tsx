@@ -35,8 +35,11 @@ export default function WebPushRegistration() {
             console.log('Service Worker registered');
 
             // Check for message from SW to speak
+            console.log('Registering message listener...');
             navigator.serviceWorker.addEventListener('message', (event) => {
+                console.log('Message received from SW:', event.data);
                 if (event.data.type === 'SPEAK_REMINDER' && event.data.text) {
+                    console.log('Calling speak() with:', event.data.text);
                     speak(event.data.text);
                 }
             });
