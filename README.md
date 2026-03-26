@@ -11,80 +11,67 @@ Elderly patients frequently struggle with complex medication schedules. MedAssis
 - **Interactive AI Lab**: A visual playground for caretakers to understand AI decision-making.
 - **Live Monitor**: Continuous background monitoring for real-time medication triggers.
 
-## 🏗️ System Architecture
+## 🏗️ System Architecture (Production)
 
 ```mermaid
 graph TD
-    %% Client Tier
-    subgraph Client_Tier ["Client Tier (Presentation)"]
-        Web["Next.js Application<br/>(Caretaker/Patient Portals)"]
-        Mobile["Kotlin Android App<br/>(Patient companion)"]
+    subgraph Client_Cloud ["Client Cloud (Vercel)"]
+        Web["Next.js Frontend<br/>(HTTPS / SSL Managed)"]
+        Proxy["Vercel Proxy Layer<br/>(Zero-Domain Bridge)"]
     end
 
-    %% Application Tier
-    subgraph App_Tier ["Application Tier (Logic)"]
-        RestAPI["Django REST Framework API"]
-        Auth["JWT Security Layer"]
-        subgraph Internal_Engines ["Processing Engines"]
-            Logic["Adherence Logic Engine (Time-Weighted)"]
-            ML["RandomForest ML Service (17 Features)"]
-            OCR["OCR Parsing Service (Azure AI)"]
-        end
+    subgraph Server_Cloud ["Server Cloud (AWS EC2)"]
+        RestAPI["Django API (Port 8000)"]
+        Monitor["Voice Monitor (System Service)"]
+        DB[(SQLite Persistence)]
     end
 
-    %% Data Tier
-    subgraph Data_Tier ["Data Tier (Persistence)"]
-        Postgres[(PostgreSQL Database)]
-        LocalStorage[(Android Room DB)]
-    end
+    Web --> Proxy
+    Proxy --> RestAPI
+    RestAPI --> DB
+    Monitor --> RestAPI
 ```
 
 ---
 
-## 🚀 Quick Start Guide
+## 🚀 Production Quick Start (The "Zero-Domain" Way)
 
-### **1. Backend (API & ML)**
-```bash
-cd backend
-python3 -m venv venv && source venv/bin/activate
-pip install -r requirements.txt
-python3 manage.py migrate
-python3 manage.py runserver  # PORT 8000
-```
+### **1. Backend (AWS EC2)**
+- **OS**: Amazon Linux 2023 / Ubuntu.
+- **Python**: 3.11+.
+- **Setup**:
+  ```bash
+  git clone [Backend_URL] && cd backend
+  python3.11 -m venv venv && source venv/bin/activate
+  pip install -r requirements.txt
+  python3 manage.py migrate && python3 manage.py seed_demo_data
+  python3 manage.py runserver 0.0.0.0:8000
+  ```
 
-### **2. Frontend (Patient/Caretaker Dashboard)**
-```bash
-cd frontend
-npm install
-npm run dev  # PORT 3000
-```
-
-### **3. Automatic Voice Monitor (CRITICAL)**
-To enable the automatic voice reminders for your demo, run this in a separate terminal:
-```bash
-python3 manage.py check_reminders --loop
-```
+### **2. Frontend (Vercel)**
+- **Root**: `frontend/`
+- **Env Vars**: 
+  - `NEXT_PUBLIC_API_URL`: `/api`
+  - `AWS_BACKEND_URL`: `http://[YOUR_AWS_IP]:8000`
 
 ---
 
-## 📁 Project Structure & Documentation
+## 📁 Project Structure & Handoff
 
 | Module | Description | Documentation |
 | :--- | :--- | :--- |
 | **Backend** | API, ML Models, OCR, Notifications | [Backend README](./backend/README.md) |
 | **Frontend** | Patient/Caretaker Web Dashboards | [Frontend README](./frontend/README.md) |
-| **Mobile App** | Kotlin companion with offline sync | [Mobile README](./mobile-app/README.md) |
-| **AI Lab** | Visual analytics and predictivity | [AI Lab Walkthrough](./docs/AI_LAB_WALKTHROUGH.md) |
-| **Voice System** | Audible Alert Engine Architecture | [VOICE_SYSTEM.md](./docs/VOICE_SYSTEM.md) |
-| **Deployment** | Production & Server configuration | [DEPLOYMENT.md](./DEPLOYMENT.md) |
+| **Zero-Domain Deployment** | Vercel Proxy Architecture Guide | [PROD_DEPLOYMENT.md](./docs/PROD_DEPLOYMENT.md) |
+| **Client Handoff** | Final Credentials & Login Guide | [CLIENT_HANDOFF.md](./docs/CLIENT_HANDOFF.md) |
 
 ---
 
 ## 🛡️ Technical Implementation Highlights
-- **Weighted Adherence**: Uses a time-decay algorithm (`max(0.4, 1.0 - (hours_late * 0.1))`) for granular health monitoring.
-- **VAPID WebPush**: Native background notifications without 3rd party cloud fees.
-- **Azure AI Ingestion**: OCR-based prescription scanning for zero-manual-entry setup.
-- **Robust Mobile Build**: Official APK included at `releases/medassist-v1.0-debug.apk`.
+- **Universal Voice Engine**: Audible alerts for elderly patients via Web Speech API.
+- **Vercel Proxy Bridge**: Secure connection to AWS backend without a domain name.
+- **AI Adherence Logic**: Predictive risk analysis using RandomForest ML.
+- **Clinical Admin**: Real-time patient profile configuration for caretakers.
 
 ---
 *Maintained by the MedAssist Engineering Team. Optimized for Healthcare Excellence.* 🦅🛡️🔥🏆
