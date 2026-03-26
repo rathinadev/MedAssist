@@ -4,6 +4,10 @@ const nextConfig: NextConfig = {
   async rewrites() {
     return [
       {
+        source: "/api/webpush/:path*",
+        destination: `${process.env.AWS_BACKEND_URL || "http://localhost:8000"}/webpush/:path*/`,
+      },
+      {
         source: "/api/:path*",
         destination: `${process.env.AWS_BACKEND_URL || "http://localhost:8000"}/api/:path*/`,
       },
