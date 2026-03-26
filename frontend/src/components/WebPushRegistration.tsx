@@ -1,19 +1,27 @@
 "use client";
 
-import { useEffect } from 'react';
-import axios from 'axios';
+import { useState, useEffect } from 'react';
+import api from '@/lib/api';
+import { Button } from '@/components/ui/button';
+import { Volume2 } from 'lucide-react';
+import { toast } from 'sonner';
 
 const PUBLIC_VAPID_KEY = "BBzdZHSw8oDv5J--SszOnXldDM8rMI0SNCR7614fUuzE6AH7dffZFsZmCEQwyE6kTjJpdycsYefnB9RM88_iEZ8";
 
 export default function WebPushRegistration() {
+    const [permissionStatus, setPermissionStatus] = useState<NotificationPermission>('default');
 
     useEffect(() => {
+        if (typeof window !== 'undefined' && 'Notification' in window) {
+            setPermissionStatus(Notification.permission);
+        }
+
         const userData = localStorage.getItem('user');
         if (!userData) return;
 
         try {
             const user = JSON.parse(userData);
-            if (user.id && 'serviceWorker' in navigator && 'PushManager' in window) {
+            if (user.id && 'serviceWorker' in navigator && 'PushManager' in window && Notification.permission === 'granted') {
                 registerServiceWorker(user.id);
             }
         } catch (e) {
@@ -33,8 +41,10 @@ export default function WebPushRegistration() {
                 }
             });
 
-            // Request permission
+            // Request permission (or re-verify)
             const permission = await Notification.requestPermission();
+            setPermissionStatus(permission);
+
             if (permission === 'granted') {
                 // CLEAR OLD SUBSCRIPTIONS (This fixes the 'AbortError' often)
                 const oldSubscription = await registration.pushManager.getSubscription();
@@ -48,17 +58,13 @@ export default function WebPushRegistration() {
                     applicationServerKey: urlBase64ToUint8Array(PUBLIC_VAPID_KEY)
                 });
 
-                // Send subscription to backend
-                await axios.post('http://localhost:8000/webpush/save_information', {
+                // Send subscription to backend using shared API client
+                await api.post('/webpush/save_information', {
                     subscription: subscription.toJSON(),
                     group: `user_${userId}`,
                     status_type: 'subscribe',
                     browser: navigator.userAgent.includes("Chrome") ? "Chrome" : "Firefox",
                     user_agent: navigator.userAgent
-                }, {
-                    headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('access_token')}`
-                    }
                 });
 
                 console.log('Push Subscription saved to backend');
@@ -68,6 +74,25 @@ export default function WebPushRegistration() {
         }
     };
 
+    const handleEnableVoice = async () => {
+        const userData = localStorage.getItem('user');
+        if (!userData) {
+            toast.error("Please log in to enable voice alerts");
+            return;
+        }
+        const user = JSON.parse(userData);
+        await registerServiceWorker(user.id);
+
+        // Satisfy browser auto-play policy by speaking a silent or test message once
+        if ('speechSynthesis' in window) {
+            const utterance = new SpeechSynthesisUtterance("Voice alerts enabled");
+            utterance.volume = 0.1; // Quiet test
+            window.speechSynthesis.speak(utterance);
+        }
+
+        toast.success("Voice alerts enabled successfully!");
+    };
+
     const speak = (text: string) => {
         if ('speechSynthesis' in window) {
             const utterance = new SpeechSynthesisUtterance(text);
@@ -75,7 +100,20 @@ export default function WebPushRegistration() {
         }
     };
 
-    return null; // Side-effect only component
+    if (permissionStatus === 'granted') return null;
+
+    return (
+        <div className="fixed bottom-4 right-4 z-50">
+            <Button
+                onClick={handleEnableVoice}
+                className="shadow-lg animate-pulse hover:animate-none"
+                variant="default"
+            >
+                <Volume2 className="mr-2 h-4 w-4" />
+                Enable Voice Alerts
+            </Button>
+        </div>
+    );
 }
 
 function urlBase64ToUint8Array(base64String: string) {

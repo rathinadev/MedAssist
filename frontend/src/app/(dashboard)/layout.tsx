@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AuthProvider } from "@/lib/auth";
+import WebPushRegistration from "@/components/WebPushRegistration";
 
 export default function DashboardLayout({
   children,
@@ -43,5 +44,10 @@ export default function DashboardLayout({
     );
   }
 
-  return <AuthProvider>{children}</AuthProvider>;
+  return (
+    <AuthProvider>
+      {children}
+      <WebPushRegistration />
+    </AuthProvider>
+  );
 }

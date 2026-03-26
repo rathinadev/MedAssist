@@ -8,6 +8,10 @@ const nextConfig: NextConfig = {
         destination: `${process.env.AWS_BACKEND_URL || "http://localhost:8000"}/api/:path*/`,
       },
       {
+        source: "/webpush/:path*",
+        destination: `${process.env.AWS_BACKEND_URL || "http://localhost:8000"}/webpush/:path*/`,
+      },
+      {
         source: "/media/:path*",
         destination: `${process.env.AWS_BACKEND_URL || "http://localhost:8000"}/media/:path*/`,
       },

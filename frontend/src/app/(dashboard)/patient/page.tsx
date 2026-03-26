@@ -20,7 +20,6 @@ import api from "@/lib/api";
 import type { TodaySchedule, AdherenceStats, ScheduleItem } from "@/types";
 import { cn } from "@/lib/utils";
 import { DashboardSkeleton } from "@/components/shared/loading-skeleton";
-import WebPushRegistration from "@/components/WebPushRegistration";
 
 export default function PatientDashboard() {
   const [schedule, setSchedule] = useState<TodaySchedule | null>(null);
@@ -152,7 +151,6 @@ export default function PatientDashboard() {
 
   return (
     <div className="space-y-6">
-      <WebPushRegistration />
       <div>
         <h1 className="text-2xl font-bold">Good day!</h1>
         <p className="text-muted-foreground">
