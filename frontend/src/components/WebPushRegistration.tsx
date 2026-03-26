@@ -59,7 +59,7 @@ export default function WebPushRegistration() {
                 });
 
                 // Send subscription to backend using shared API client
-                await api.post('/webpush/save_information', {
+                await api.post('/webpush/save_information/', {
                     subscription: subscription.toJSON(),
                     group: `user_${userId}`,
                     status_type: 'subscribe',

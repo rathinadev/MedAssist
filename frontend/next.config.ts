@@ -5,7 +5,7 @@ const nextConfig: NextConfig = {
     return [
       {
         source: "/api/webpush/:path*",
-        destination: `${process.env.AWS_BACKEND_URL || "http://localhost:8000"}/webpush/:path*/`,
+        destination: `${process.env.AWS_BACKEND_URL || "http://localhost:8000"}/webpush/:path*`,
       },
       {
         source: "/api/:path*",
