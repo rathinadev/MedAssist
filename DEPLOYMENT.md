@@ -1,63 +1,71 @@
-# MedAssist Deployment & Handover Guide
+# 🏥 MedAssist: Master Deployment & Handover Guide (April 2026) 🚀
 
-This document provides technical instructions for moving the MedAssist system from a local development environment to a production server.
-
-## 🚀 Key Deployment Requirements
-
-### **1. HTTPS is Mandatory**
-Due to browser security policies, the following features will **ONLY** work over a secure HTTPS connection:
-- **Web Speech API**: Browser-side medication reminders.
-- **Service Workers**: Background WebPush notifications.
-- **Camera Access**: Using the mobile device for prescription scanning.
-
-> [!IMPORTANT]
-> Ensure you have an SSL certificate (e.g., Let's Encrypt) installed on your production server.
-
-### **2. Environment Configuration**
-Update the following variables to match your production domain/IP:
-
-#### **Backend (`backend/medassist_backend/settings.py`)**
-- `ALLOWED_HOSTS`: Add your production domain or IP.
-- `CORS_ALLOWED_ORIGINS`: Include the production URL of your Next.js application.
-- `TIME_ZONE`: Currently set to `"Asia/Kolkata"`. Adjust if your client is in a different region.
-
-#### **Frontend (`frontend/.env`)**
-- `NEXT_PUBLIC_API_URL`: Change to `https://your-api-domain.com/api`.
-
-#### **Mobile (`mobile-app/`)**
-- Update the `BASE_URL` in `BuildConfig` or your networking module to point to your public API.
+This document is the **Single Source of Truth** for deploying and handing over the MedAssist ecosystem. It covers the Backend, Frontend (Vercel Proxy), and Mobile platforms.
 
 ---
 
-## 🛠️ Essential Commands
+## 🏗️ 1. Backend: High-Performance AWS Setup
+The backend serves as the central hub for data, OCR, and real-time notifications.
 
-### **Running the WebPush Monitor**
-To enable automatic voice reminders, the backend must be "Listening" 24/7. Run this command in a background process (using `tmux`, `screen`, or `systemd`):
-
+### **The "One-Command" Setup**
+From the root of the repository, execute:
 ```bash
-python3 manage.py check_reminders --loop
+# This bootstraps venv, dependencies, migrations, and starts background services
+bash setup.sh
 ```
 
-### **Building the Mobile APK**
-We have already provided a build at `releases/medassist-v1.0-debug.apk`. If you need to rebuild:
+### **Manual Service Verification**
+After setup, ensure these background services are running in `screen`:
+- **API Server** (Port 8000): `screen -r api`
+- **Voice Monitor** (Real-time triggers): `screen -r monitor`
 
+---
+
+## 🌉 2. Frontend: The "Zero-Domain" Vercel Proxy
+To bypass browser **Mixed Content** blocks (HTTPS site talking to HTTP backend), we use a server-side proxy strategy.
+
+### **Vercel Configuration**
+1. **Root Directory**: Set to `frontend`.
+2. **Environment Variables**:
+   - `NEXT_PUBLIC_API_URL`: Set to `/api` (Crucial for the proxy bridge).
+   - `AWS_BACKEND_URL`: Set to `http://[YOUR_AWS_IP]:8000`.
+
+### **How it works**:
+Your Vercel site (`https://...`) sends requests to `/api/*`. Next.js intercepts these on its server and forwards them to your AWS Server (`http://...`). The browser only sees the secure HTTPS connection.
+
+---
+
+## 📱 3. Mobile: Android Native Deployment
+The mobile app is built for offline-first reliability and synchronized alerts.
+
+### **Installation**
+1. Locate the stabilized APK: `releases/MedAssist-Stabilized.apk`.
+2. Sideload to any Android device (API 26+).
+3. Ensure the `Constants.BASE_URL` in the code matches your current AWS IP.
+
+### **Build from Source**
 ```bash
+cd mobile-app
 ./gradlew assembleDebug
 ```
 
 ---
 
-## 🔊 Testing the Voice Engine
+## 🔊 4. The "Double-Voice" Test
 To verify the system is ready for the client:
-1. Log in to the **Patient Dashboard**.
-2. Locate the **"Test Voice"** button in the sidebar.
-3. If you hear "MedAssist Voice System is active," your browser's audio engine is correctly configured.
-
-## 🛡️ VAPID Key Management
-The system uses pre-generated VAPID keys for WebPush. These are stored in `backend/medassist_backend/settings.py` and `frontend/src/components/WebPushRegistration.tsx`. 
-- **DO NOT** change these keys unless you regenerate them on both ends simultaneously, as it will break existing patient registrations.
+1. Log in to the **Web Dashboard** on a laptop.
+2. Log in to the **Mobile App** on a phone.
+3. Mark a medication as "Due" in one minute.
+4. **Verification**: 
+   - At the scheduled minute, the **Laptop** will speak the reminder.
+   - Simultaneously, the **Phone** will show a notification and speak the reminder.
 
 ---
 
-**Handover Status**: All systems are 100% stable as of March 26, 2026.
-🦅🛡️🔥🏆
+## 🔐 5. Demo Credentials
+- **Universal Password**: `MedAssist2026!`
+- **Primary Patient**: `p6@medassist.com` (Frank)
+- **Primary Caretaker**: `dr.smith@medassist.com`
+
+---
+*Maintained by the MedAssist Engineering Team. Optimized for Healthcare Excellence.* 🦅🛡️🔥🏆
