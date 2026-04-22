@@ -23,12 +23,15 @@ The most critical feature of the mobile app is the medication reminder system:
 ### AlarmManager Logic
 Unlike standard timers, `AlarmManager` communicates directly with the Android OS to schedule "Exact Alarms". This ensures the phone wakes up to notify the patient even when in deep battery-saving mode.
 
-### BroadcastReceivers
-- **`MedicationAlarmReceiver`**: Triggered by the OS when a dose is due. It builds and displays a high-priority system notification.
-- **`RemoteAlertWorker`**: Uses **WorkManager** to perform background sync every 15 minutes. It fetches remote adherence alerts and triggers the local **Android Text-to-Speech (TTS)** engine to speak reminders out loud.
-- **`BootReceiver`**: Listens for the `ACTION_BOOT_COMPLETED` system event. This allows the app to automatically reschedule all medication alarms and workers if the user's phone is restarted.
+### RemoteAlertWorker
+Uses **WorkManager** to perform background sync. It has been stabilized to support **Multi-Dose Schedules**:
+- It fetches remote adherence alerts even if the laptop is also active (Synchronized Alerts).
+- Triggers the local **Android Text-to-Speech (TTS)** engine for audible reminders.
 
-## 4. Networking and Security
+## 4. Prescription Scanning (Stabilized)
+Patients can now scan prescriptions without manual ID selection. The backend automatically resolves identity from the JWT token, ensuring a seamless one-tap experience.
+
+## 5. Networking and Security
 
 - **Retrofit & OkHttp**: Used for type-safe API communication. Includes a custom interceptor that handles JWT token injection and auto-refresh logic matching the Web frontend.
 - **Encrypted SharedPreferences**: Stores sensitive authentication tokens to prevent unauthorized access by other apps on the device.

@@ -52,9 +52,16 @@ npm install
 npm run dev
 ```
 
-**Environment Configuration**: Ensure `NEXT_PUBLIC_API_URL` points to your running Django server.
+**Environment Configuration**: Ensure `NEXT_PUBLIC_API_URL` is set to `/api` for production (to enable the proxy bridge) or `http://localhost:8000/api` for local development.
 
-## 6. Technical Implementation Guides
+## 6. Architectural Highlight: The Proxy Bridge
+
+MedAssist uses a **Zero-Domain Bridge** to satisfy modern browser security (HTTPS) while communicating with a plain HTTP AWS backend:
+- The frontend (on Vercel) is protected by SSL.
+- `next.config.ts` handles **Rewrites** that proxy all `/api/*` traffic to the backend server.
+- This prevents "Mixed Content" errors and allows secure communication without a backend domain name.
+
+## 7. Technical Implementation Guides
 
 - [**Data Flow Mapping**](./docs/technical-guides/data-dictionary.md): UI to Backend field mapping.
 - [**The Scan Lifecycle**](./docs/technical-guides/prescription-flow-trace.md): OCR review and validation flow.
