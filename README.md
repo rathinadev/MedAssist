@@ -63,7 +63,15 @@ graph TD
 | **Backend** | API, ML Models, OCR, Notifications | [Backend README](./backend/README.md) |
 | **Frontend** | Patient/Caretaker Web Dashboards | [Frontend README](./frontend/README.md) |
 | **Zero-Domain Deployment** | Vercel Proxy Architecture Guide | [PROD_DEPLOYMENT.md](./docs/PROD_DEPLOYMENT.md) |
-| **Client Handoff** | Final Credentials & Login Guide | [CLIENT_HANDOFF.md](./docs/CLIENT_HANDOFF.md) |
+| **Master Demo Guide** | Credentials, Passwords & Stabilization Fixes | [MASTER_DEMO_GUIDE.md](./MASTER_DEMO_GUIDE.md) |
+
+---
+
+## 🚀 Stabilization & Production Readiness (April 22nd Update)
+The recent stabilization pass resolved critical regressions in:
+- **Identity Resolution**: Mobile scanning now uses the Bearer token to automatically resolve patient identity.
+- **Smart Multi-Dose Notifications**: Support for multiple doses per day without notification suppression.
+- **Voice Synthesis Perms**: Synchronized WebPush registration with explicit "Enable Voice" permissions.
 
 ---
 
