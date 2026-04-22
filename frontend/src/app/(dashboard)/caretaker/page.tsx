@@ -30,6 +30,12 @@ export default function CaretakerDashboard() {
   const [predictions, setPredictions] = useState<
     { patient: PatientProfile; prediction: PredictionResponse }[]
   >([]);
+  const [stats, setStats] = useState({
+    total_patients: 0,
+    total_medications: 0,
+    average_adherence: 0,
+    high_risk_count: 0,
+  });
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -37,11 +43,16 @@ export default function CaretakerDashboard() {
     setIsLoading(true);
     setError(null);
     try {
-      const patientsRes = await api.get("/patients/");
+      const [patientsRes, statsRes] = await Promise.all([
+        api.get("/patients/"),
+        api.get("/patients/stats/")
+      ]);
+
       const patientsList: PatientProfile[] = patientsRes.data.results || patientsRes.data;
       setPatients(patientsList);
+      setStats(statsRes.data);
 
-      const predictionPromises = patientsList.slice(0, 10).map(async (p) => {
+      const predictionPromises = patientsList.slice(0, 5).map(async (p) => {
         try {
           const predRes = await api.get(`/predictions/${p.user.id}/`);
           return { patient: p, prediction: predRes.data as PredictionResponse };
@@ -112,7 +123,7 @@ export default function CaretakerDashboard() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Total Patients</p>
-                <p className="text-3xl font-bold">{patients.length}</p>
+                <p className="text-3xl font-bold">{stats.total_patients}</p>
               </div>
               <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
                 <Users className="h-6 w-6 text-primary" />
@@ -128,7 +139,7 @@ export default function CaretakerDashboard() {
                 <p className="text-sm text-muted-foreground">
                   Average Adherence
                 </p>
-                <p className="text-3xl font-bold">{avgAdherence}%</p>
+                <p className="text-3xl font-bold">{stats.average_adherence}%</p>
               </div>
               <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-green-100">
                 <TrendingUp className="h-6 w-6 text-green-600" />
@@ -144,7 +155,7 @@ export default function CaretakerDashboard() {
                 <p className="text-sm text-muted-foreground">
                   High Risk Patients
                 </p>
-                <p className="text-3xl font-bold">{highRiskCount}</p>
+                <p className="text-3xl font-bold">{stats.high_risk_count}</p>
               </div>
               <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-red-100">
                 <AlertTriangle className="h-6 w-6 text-red-600" />
@@ -160,7 +171,7 @@ export default function CaretakerDashboard() {
                 <p className="text-sm text-muted-foreground">
                   Medications Managed
                 </p>
-                <p className="text-3xl font-bold">--</p>
+                <p className="text-3xl font-bold">{stats.total_medications}</p>
               </div>
               <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-blue-100">
                 <Pill className="h-6 w-6 text-blue-600" />

@@ -15,8 +15,19 @@ export default function MLPlayground() {
     const [avgDelay, setAvgDelay] = useState(30);
     const [consecutiveMisses, setConsecutiveMisses] = useState(1);
     const [prediction, setPrediction] = useState<any>(null);
+    const [profiles, setProfiles] = useState<any[]>([]);
     const [loading, setLoading] = useState(false);
     const [activeStep, setActiveStep] = useState(0);
+    const [selectedProfileId, setSelectedProfileId] = useState<any>(null);
+
+    const fetchProfiles = async () => {
+        try {
+            const response = await api.get("/predictions/playground/");
+            setProfiles(response.data.profiles || []);
+        } catch (err) {
+            console.error("Failed to fetch profiles", err);
+        }
+    };
 
     const fetchPrediction = async () => {
         setLoading(true);
@@ -39,6 +50,10 @@ export default function MLPlayground() {
     };
 
     useEffect(() => {
+        fetchProfiles();
+    }, []);
+
+    useEffect(() => {
         setActiveStep(1);
         const timer = setTimeout(() => {
             fetchPrediction();
@@ -46,12 +61,28 @@ export default function MLPlayground() {
         return () => clearTimeout(timer);
     }, [missRate, avgDelay, consecutiveMisses]);
 
+    const handleLoadProfile = (profile: any) => {
+        setSelectedProfileId(profile.id);
+        setMissRate(profile.stats.miss_rate);
+        setAvgDelay(profile.stats.avg_delay);
+        setConsecutiveMisses(profile.stats.consecutive_misses);
+    };
+
     const getRiskColor = (level: string) => {
         switch (level?.toLowerCase()) {
             case "high": return "bg-red-500 text-white shadow-lg shadow-red-200";
             case "medium": return "bg-amber-500 text-white shadow-lg shadow-amber-200";
             case "low": return "bg-emerald-500 text-white shadow-lg shadow-emerald-200";
             default: return "bg-gray-500 text-white";
+        }
+    };
+
+    const getRiskTextColor = (level: string) => {
+        switch (level?.toLowerCase()) {
+            case "high": return "text-red-500";
+            case "medium": return "text-amber-500";
+            case "low": return "text-emerald-500";
+            default: return "text-slate-500";
         }
     };
 
@@ -112,6 +143,20 @@ export default function MLPlayground() {
                 </div>
             </div>
 
+            {/* Quick Guide Banner */}
+            <div className="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-3xl p-6 text-white shadow-lg flex flex-col md:flex-row items-center gap-6 border-b-4 border-indigo-900/20">
+                <div className="p-4 bg-white/10 rounded-2xl backdrop-blur-md">
+                    <Info className="h-8 w-8 text-white" />
+                </div>
+                <div className="space-y-1">
+                    <h3 className="text-lg font-black uppercase tracking-tight">How to use the Lab</h3>
+                    <p className="text-sm text-blue-50/80 font-medium leading-relaxed max-w-3xl">
+                        This is a <strong className="text-white">Predictive Sandbox</strong>. 
+                        Click a patient profile on the left to load their real-world behavior into the machine, or manually drag the sliders below to simulate hygiene "scenarios" and see how the AI adjusts its risk assessment in real-time.
+                    </p>
+                </div>
+            </div>
+
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
                 {/* Left Control Column */}
                 <div className="lg:col-span-4 space-y-6">
@@ -126,6 +171,35 @@ export default function MLPlayground() {
                             <CardDescription className="text-slate-400">Drag to observe logic drift in real-time</CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-12 pt-10 pb-12 px-8 bg-white">
+                            {/* Profile Selector */}
+                            <div className="space-y-3">
+                                <span className="text-xs font-black text-slate-500 uppercase tracking-[0.2em]">Load Patient Profile</span>
+                                <div className="grid grid-cols-1 gap-2">
+                                    {profiles.map((p) => (
+                                        <button
+                                            key={p.id}
+                                            onClick={() => handleLoadProfile(p)}
+                                            className={cn(
+                                                "text-left px-4 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-between group border",
+                                                selectedProfileId === p.id 
+                                                    ? "bg-indigo-600 text-white border-indigo-700 shadow-inner translate-x-2" 
+                                                    : "bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200"
+                                            )}
+                                        >
+                                            <span className={cn(selectedProfileId !== p.id && "group-hover:translate-x-1 transition-transform")}>{p.name}</span>
+                                            <ChevronRight className={cn("h-3 w-3", selectedProfileId === p.id ? "text-white/50" : "text-slate-300")} />
+                                        </button>
+                                    ))}
+                                    {profiles.length === 0 && (
+                                        <div className="p-4 bg-slate-50 rounded-xl border border-dashed border-slate-200 text-[10px] text-slate-400 text-center font-bold italic">
+                                            No active patient data found
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+
+                            <div className="h-px bg-slate-100" />
+
                             {/* Miss Rate */}
                             <div className="group space-y-5">
                                 <div className="flex justify-between items-center">
@@ -205,15 +279,110 @@ export default function MLPlayground() {
 
                 {/* Right Visualization Column */}
                 <div className="lg:col-span-8 space-y-6">
-                    <Card className="border-slate-200 shadow-2xl overflow-hidden bg-white rounded-3xl">
+                    {/* Health Score Banner */}
+                    <Card className="border-none shadow-xl bg-gradient-to-br from-indigo-600 to-indigo-800 overflow-hidden rounded-[2.5rem] relative">
+                        <div className="absolute top-0 left-0 w-full h-full opacity-10 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-white to-transparent" />
+                        <CardContent className="p-8 flex flex-col items-center justify-center relative z-10">
+                            <span className="text-[10px] font-black text-indigo-200 uppercase tracking-[0.4em] mb-2">Integrated Behavioral Health Score</span>
+                            <div className="flex items-baseline gap-2">
+                                <h2 className={cn("text-7xl font-black tracking-tighter text-white transition-all duration-1000", loading ? "opacity-40" : "opacity-100")}>
+                                    {prediction?.weighted_adherence?.toFixed(1) || "0.0"}
+                                    <span className="text-2xl text-indigo-300 ml-1">%</span>
+                                </h2>
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    {/* DUAL LOGIC COMPARISON WINDOW */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {/* UNTRAINED: Clinical Rule Engine */}
+                        <Card className="border-slate-200 shadow-xl overflow-hidden bg-white rounded-[2.5rem] flex flex-col">
+                            <CardHeader className="bg-slate-50 border-b border-slate-100 pb-4 pt-6 px-8">
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-2">
+                                        <ShieldAlert className="h-5 w-5 text-slate-400" />
+                                        <CardTitle className="text-xs font-black text-slate-800 uppercase tracking-widest">Clinical Engine</CardTitle>
+                                    </div>
+                                    <Badge variant="outline" className="text-[9px] font-black tracking-tighter uppercase text-slate-400 border-slate-200">Untrained</Badge>
+                                </div>
+                            </CardHeader>
+                            <CardContent className="p-8 flex-1 flex flex-col items-center justify-center text-center space-y-6">
+                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">Deterministic Risk</span>
+                                <div className={cn(
+                                    "px-8 py-4 rounded-3xl text-3xl font-black uppercase tracking-tight transition-all duration-1000",
+                                    loading ? "bg-slate-100 text-slate-200" : getRiskColor(prediction?.clinical_engine?.risk_level)
+                                )}>
+                                    {prediction?.clinical_engine?.risk_level || "..."}
+                                </div>
+                                <p className="text-xs text-slate-500 italic font-medium leading-relaxed">
+                                    "{prediction?.clinical_engine?.explanation || "Initializing..."}"
+                                </p>
+                            </CardContent>
+                            <div className="p-4 bg-slate-50 text-[9px] font-bold text-slate-400 uppercase tracking-widest text-center border-t border-slate-100">
+                                Heuristic Validation Only
+                            </div>
+                        </Card>
+
+                        {/* TRAINED: AI Intelligence Lab */}
+                        <Card className="border-indigo-100 shadow-xl overflow-hidden bg-white rounded-[2.5rem] flex flex-col ring-2 ring-indigo-500/20">
+                            <CardHeader className="bg-indigo-600 border-b border-indigo-700 pb-4 pt-6 px-8">
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-2">
+                                        <Brain className="h-5 w-5 text-indigo-100" />
+                                        <CardTitle className="text-xs font-black text-white uppercase tracking-widest">AI Intelligence</CardTitle>
+                                    </div>
+                                    <Badge className="bg-white/20 text-indigo-50 text-[10px] font-black tracking-tighter uppercase border-none hover:bg-white/30">Trained on 7.2k Rows</Badge>
+                                </div>
+                            </CardHeader>
+                            <CardContent className="p-8 flex-1 flex flex-col items-center justify-center text-center space-y-6">
+                                <span className="text-[10px] font-black text-indigo-400 uppercase tracking-[0.3em]">Probabilistic Insight</span>
+                                {prediction?.ml_intelligence ? (
+                                    <>
+                                        <div className={cn(
+                                            "px-8 py-4 rounded-3xl text-3xl font-black uppercase tracking-tight transition-all duration-1000",
+                                            loading ? "bg-indigo-50 text-indigo-100" : getRiskColor(prediction?.ml_intelligence?.risk_level)
+                                        )}>
+                                            {prediction?.ml_intelligence?.risk_level}
+                                        </div>
+                                        <p className="text-xs text-indigo-900 font-bold leading-relaxed px-2 py-2 bg-indigo-50 rounded-xl border border-indigo-100">
+                                            {prediction?.ml_intelligence?.explanation}
+                                        </p>
+                                    </>
+                                ) : (
+                                    <div className="space-y-4">
+                                        <div className="p-4 bg-slate-50 rounded-3xl animate-pulse">
+                                            <div className="h-6 w-32 bg-slate-200 rounded mx-auto" />
+                                        </div>
+                                        <p className="text-[10px] text-slate-400 font-bold uppercase">Awaiting Brain Update...</p>
+                                    </div>
+                                )}
+                            </CardContent>
+                            <div className="p-4 bg-indigo-50 text-[9px] font-black text-indigo-600 uppercase tracking-widest text-center border-t border-indigo-100">
+                                Predictive Neural Inference
+                            </div>
+                        </Card>
+                    </div>
+
+                    {/* Contrast Alert Badge */}
+                    {prediction?.clinical_engine?.risk_level !== prediction?.ml_intelligence?.risk_level && prediction?.ml_intelligence && (
+                        <div className="bg-amber-100/80 border border-amber-200 text-amber-900 p-4 rounded-3xl flex items-center justify-between animate-in zoom-in-95 duration-500">
+                            <div className="flex items-center gap-3">
+                                <Zap className="h-5 w-5 text-amber-600 fill-amber-600" />
+                                <span className="text-sm font-black uppercase tracking-tight">AI Logical Refinement Detected</span>
+                            </div>
+                            <span className="text-[11px] font-medium italic">Model corrected clinical heuristic based on learned patterns</span>
+                        </div>
+                    )}
+
+                    {/* Neural Decision Flow Visualization */}
+                    <Card className="border-slate-200 shadow-xl overflow-hidden bg-white rounded-[2.5rem]">
                         <CardHeader className="border-b border-slate-50 bg-white pb-6 pt-8 px-10">
                             <div className="flex items-center justify-between">
                                 <div>
-                                    <CardTitle className="text-2xl font-black flex items-center gap-3 text-slate-900 tracking-tight">
-                                        <Zap className="h-6 w-6 text-amber-500 fill-amber-500" />
-                                        Neural Decision Flow
+                                    <CardTitle className="text-sm font-black flex items-center gap-3 text-slate-900 tracking-tight uppercase">
+                                        <Network className="h-4 w-4 text-indigo-500" />
+                                        Inference Node Trace
                                     </CardTitle>
-                                    <CardDescription className="text-slate-500 font-medium">Inference trace across Randomized Decision Trees</CardDescription>
                                 </div>
                                 <div className="bg-slate-50 px-4 py-2 rounded-2xl flex items-center gap-3 border border-slate-100">
                                     <div className={cn("h-2.5 w-2.5 rounded-full", loading ? "bg-amber-500 animate-pulse" : "bg-emerald-500")} />
@@ -224,38 +393,13 @@ export default function MLPlayground() {
                             </div>
                         </CardHeader>
                         <CardContent className="p-0 pt-10">
-                            {/* Visual Flow Area */}
-                            <div className="relative h-[340px] mb-10 px-12">
+                            <div className="relative h-[280px] mb-10 px-12">
                                 <VisualFlow
                                     activeStep={activeStep}
                                     missRate={missRate}
                                     avgDelay={avgDelay}
                                     consecutive={consecutiveMisses}
-                                    resultRisk={prediction?.risk_level}
-                                />
-                            </div>
-
-                            {/* Enhanced Interactive Result Bar */}
-                            <div className="grid grid-cols-1 sm:grid-cols-3 bg-slate-50/50 border-t border-slate-100">
-                                <ResultStat
-                                    label="Risk Classification"
-                                    value={prediction?.risk_level || "..."}
-                                    color={getRiskColor(prediction?.risk_level)}
-                                    isLoading={loading}
-                                    icon={prediction?.risk_level === 'high' ? <AlertTriangle className="h-4 w-4" /> : <CheckCircle2 className="h-4 w-4" />}
-                                />
-                                <ResultStat
-                                    label="Health Score"
-                                    value={`${prediction?.weighted_adherence?.toFixed(1) || "0.0"}%`}
-                                    color={getWeightedAdherenceColor(prediction?.weighted_adherence)}
-                                    isLoading={loading}
-                                    isSpecial
-                                />
-                                <ResultStat
-                                    label="Model Strategy"
-                                    value={prediction?.method_used || "..."}
-                                    isLoading={loading}
-                                    isSmall
+                                    resultRisk={prediction?.ml_intelligence?.risk_level || prediction?.clinical_engine?.risk_level}
                                 />
                             </div>
                         </CardContent>
@@ -461,31 +605,6 @@ function AnimatedPath({ d, delay }: any) {
                 style={{ animationDelay: `${delay}s` }}
             />
         </g>
-    );
-}
-
-function ResultStat({ label, value, color, isLoading, isSpecial, isSmall, icon }: any) {
-    return (
-        <div className={cn(
-            "p-10 flex flex-col items-center justify-center border-r last:border-r-0 border-slate-100/50 transition-all duration-1000",
-            isSpecial && "bg-white"
-        )}>
-            <div className="flex items-center gap-2 mb-4">
-                {icon && <div className={cn("p-1 rounded bg-slate-50", color?.replace('bg-', 'text-'))}>{icon}</div>}
-                <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">{label}</span>
-            </div>
-            {isLoading ? (
-                <div className="h-10 w-28 bg-slate-100 rounded-2xl animate-pulse" />
-            ) : (
-                <div className={cn(
-                    "font-black uppercase tracking-tight transition-all duration-1000",
-                    isSmall ? "text-sm text-slate-500 bg-slate-100 px-3 py-1.5 rounded-xl" : "text-4xl",
-                    color || "text-slate-900"
-                )}>
-                    {value}
-                </div>
-            )}
-        </div>
     );
 }
 

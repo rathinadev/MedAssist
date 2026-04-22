@@ -133,32 +133,32 @@ fun HistoryScreen(
                                     ) {
                                         StatCard(
                                             title = "Total",
-                                            value = "${response.total}",
+                                            value = "${response.summary.total}",
                                             color = MaterialTheme.colorScheme.primary
                                         )
                                         StatCard(
                                             title = "Taken",
-                                            value = "${response.taken}",
+                                            value = "${response.summary.taken}",
                                             color = Success
                                         )
                                         StatCard(
                                             title = "Missed",
-                                            value = "${response.missed}",
+                                            value = "${response.summary.missed}",
                                             color = Error
                                         )
                                         StatCard(
                                             title = "Late",
-                                            value = "${response.late}",
+                                            value = "${response.summary.late}",
                                             color = Warning
                                         )
                                     }
 
-                                    if (response.total > 0) {
+                                    if (response.summary.total > 0) {
                                         Spacer(modifier = Modifier.height(12.dp))
                                         AdherenceBarChart(
-                                            taken = response.taken,
-                                            missed = response.missed,
-                                            late = response.late
+                                            taken = response.summary.taken,
+                                            missed = response.summary.missed,
+                                            late = response.summary.late
                                         )
                                     }
                                 }
@@ -311,7 +311,7 @@ private fun AdherenceLogCard(log: AdherenceLog) {
 
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = log.medicationName ?: "Medication #${log.medication}",
+                    text = log.medication.name,
                     style = MaterialTheme.typography.bodyLarge,
                     fontWeight = FontWeight.Medium
                 )

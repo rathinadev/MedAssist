@@ -378,7 +378,7 @@ private fun AdherenceTab(
         }
 
         history?.let { h ->
-            if (h.total > 0) {
+            if (h.summary.total > 0) {
                 item {
                     Card(modifier = Modifier.fillMaxWidth()) {
                         Column(
@@ -387,9 +387,9 @@ private fun AdherenceTab(
                                 .padding(16.dp)
                         ) {
                             AdherenceBarChart(
-                                taken = h.taken,
-                                missed = h.missed,
-                                late = h.late
+                                taken = h.summary.taken,
+                                missed = h.summary.missed,
+                                late = h.summary.late
                             )
                         }
                     }

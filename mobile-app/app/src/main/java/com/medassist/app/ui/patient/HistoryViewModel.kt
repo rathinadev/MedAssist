@@ -43,11 +43,11 @@ class HistoryViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoading = true, error = null)
 
-            val patientId = tokenManager.getPatientId()
-            if (patientId <= 0) {
+            val userId = tokenManager.getUserId()
+            if (userId <= 0) {
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,
-                    error = "Patient ID not found. Please log in again."
+                    error = "User session invalid. Please log in again."
                 )
                 return@launch
             }
@@ -55,7 +55,7 @@ class HistoryViewModel @Inject constructor(
             val from = _uiState.value.fromDate.format(dateFormatter)
             val to = _uiState.value.toDate.format(dateFormatter)
 
-            val result = adherenceRepository.getAdherenceHistory(patientId, from, to)
+            val result = adherenceRepository.getAdherenceHistory(userId, from, to)
 
             result.fold(
                 onSuccess = { response ->

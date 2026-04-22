@@ -64,9 +64,9 @@ class PatientDashboardViewModel @Inject constructor(
             )
 
             // Load adherence stats
-            val patientId = tokenManager.getPatientId()
-            if (patientId > 0) {
-                val statsResult = adherenceRepository.getAdherenceStats(patientId)
+            val userId = tokenManager.getUserId()
+            if (userId > 0) {
+                val statsResult = adherenceRepository.getAdherenceStats(userId)
                 statsResult.fold(
                     onSuccess = { stats ->
                         _uiState.value = _uiState.value.copy(adherenceStats = stats)
@@ -84,7 +84,7 @@ class PatientDashboardViewModel @Inject constructor(
         loadDashboard()
     }
 
-    fun takeMedication(medicationId: Int) {
+    fun takeMedication(medicationId: Int, scheduledTime: String?) {
         viewModelScope.launch {
             val currentTime = LocalDateTime.now()
                 .format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss"))
@@ -92,7 +92,8 @@ class PatientDashboardViewModel @Inject constructor(
             val result = adherenceRepository.logAdherence(
                 medicationId = medicationId,
                 status = "taken",
-                takenTime = currentTime
+                takenTime = currentTime,
+                scheduledTime = scheduledTime
             )
 
             result.fold(

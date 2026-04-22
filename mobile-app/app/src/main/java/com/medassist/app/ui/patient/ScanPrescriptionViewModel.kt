@@ -35,16 +35,23 @@ class ScanPrescriptionViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isScanning = true, error = null)
 
-            val patientId = tokenManager.getPatientId()
-            if (patientId <= 0) {
+            // Logic: 
+            // 1. Try Managed Patient ID (Doctor scanning for someone else)
+            // 2. Fallback to User ID (Patient scanning for themselves)
+            val managedPatientId = tokenManager.getPatientId()
+            val currentUserId = tokenManager.getUserId()
+            
+            val finalPatientId = if (managedPatientId > 0) managedPatientId else currentUserId
+
+            if (finalPatientId <= 0) {
                 _uiState.value = _uiState.value.copy(
                     isScanning = false,
-                    error = "Patient ID not found. Please log in again."
+                    error = "User identity not found. Please log in again."
                 )
                 return@launch
             }
 
-            val result = prescriptionRepository.scanPrescription(imageFile, patientId)
+            val result = prescriptionRepository.scanPrescription(imageFile, finalPatientId)
 
             result.fold(
                 onSuccess = { prescription ->

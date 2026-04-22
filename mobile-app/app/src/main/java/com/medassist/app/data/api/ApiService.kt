@@ -31,7 +31,10 @@ interface ApiService {
     // ==================== Patients ====================
 
     @GET("patients/")
-    suspend fun getPatients(): Response<PatientListResponse>
+    suspend fun getPatients(): Response<List<Patient>>
+
+    @GET("patients/stats/")
+    suspend fun getCaretakerStats(): Response<CaretakerStatsResponse>
 
     @POST("patients/")
     suspend fun createPatient(

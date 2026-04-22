@@ -21,12 +21,21 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         
-        // Schedule Remote Alert Sync
-        val workRequest = PeriodicWorkRequestBuilder<RemoteAlertWorker>(15, TimeUnit.MINUTES)
+        // Request Notification Permission for Android 13+
+        if (android.os.Build.VERSION.SDK_INT >= 33) {
+            androidx.core.app.ActivityCompat.requestPermissions(
+                this,
+                arrayOf(android.Manifest.permission.POST_NOTIFICATIONS),
+                101
+            )
+        }
+        
+        // Schedule Remote Alert Sync (Initial trigger)
+        val workRequest = androidx.work.OneTimeWorkRequestBuilder<RemoteAlertWorker>()
             .build()
-        WorkManager.getInstance(this).enqueueUniquePeriodicWork(
+        WorkManager.getInstance(this).enqueueUniqueWork(
             "RemoteAlertSync",
-            ExistingPeriodicWorkPolicy.KEEP,
+            androidx.work.ExistingWorkPolicy.REPLACE,
             workRequest
         )
 

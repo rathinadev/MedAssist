@@ -58,11 +58,72 @@ class PatientDetailViewModel @Inject constructor(
                         patientDetail = detail,
                         medications = detail?.medications ?: emptyList()
                     )
+
+                    // Extract the correct USER ID for medical data
+                    val userId = detail?.user?.id ?: 0
+                    if (userId > 0) {
+                        // Load adherence stats
+                        val statsResult = adherenceRepository.getAdherenceStats(userId)
+                        statsResult.fold(
+                            onSuccess = { stats ->
+                                _uiState.value = _uiState.value.copy(adherenceStats = stats)
+                            },
+                            onFailure = { /* non-critical */ }
+                        )
+
+                        // Load adherence history
+                        val historyResult = adherenceRepository.getAdherenceHistory(userId)
+                        historyResult.fold(
+                            onSuccess = { history ->
+                                _uiState.value = _uiState.value.copy(adherenceHistory = history)
+                            },
+                            onFailure = { /* non-critical */ }
+                        )
+
+                        // Load predictions
+                        val predResult = predictionRepository.getPredictions(userId)
+                        predResult.fold(
+                            onSuccess = { preds ->
+                                _uiState.value = _uiState.value.copy(predictions = preds)
+                            },
+                            onFailure = { /* non-critical */ }
+                        )
+                    }
                 } else {
-                    // Fallback to old method
+                    // Fallback to old method (using patientId as userId if detail fails)
                     val patientResponse = apiService.getPatient(patientId)
                     if (patientResponse.isSuccessful) {
-                        _uiState.value = _uiState.value.copy(patient = patientResponse.body())
+                        val patient = patientResponse.body()
+                        _uiState.value = _uiState.value.copy(patient = patient)
+                        
+                        val userId = patient?.user?.id ?: patientId
+                        
+                        // Load adherence stats
+                        val statsResult = adherenceRepository.getAdherenceStats(userId)
+                        statsResult.fold(
+                            onSuccess = { stats ->
+                                _uiState.value = _uiState.value.copy(adherenceStats = stats)
+                            },
+                            onFailure = { /* non-critical */ }
+                        )
+
+                        // Load adherence history
+                        val historyResult = adherenceRepository.getAdherenceHistory(userId)
+                        historyResult.fold(
+                            onSuccess = { history ->
+                                _uiState.value = _uiState.value.copy(adherenceHistory = history)
+                            },
+                            onFailure = { /* non-critical */ }
+                        )
+
+                        // Load predictions
+                        val predResult = predictionRepository.getPredictions(userId)
+                        predResult.fold(
+                            onSuccess = { preds ->
+                                _uiState.value = _uiState.value.copy(predictions = preds)
+                            },
+                            onFailure = { /* non-critical */ }
+                        )
                     }
                 }
             } catch (e: Exception) {
@@ -70,44 +131,6 @@ class PatientDetailViewModel @Inject constructor(
                     error = e.message ?: "Failed to load patient"
                 )
             }
-
-            // Load medications if not from detail endpoint
-            if (_uiState.value.medications.isEmpty()) {
-                val medResult = medicationRepository.getMedications(patientId)
-                medResult.fold(
-                    onSuccess = { meds ->
-                        _uiState.value = _uiState.value.copy(medications = meds)
-                    },
-                    onFailure = { /* non-critical */ }
-                )
-            }
-
-            // Load adherence stats
-            val statsResult = adherenceRepository.getAdherenceStats(patientId)
-            statsResult.fold(
-                onSuccess = { stats ->
-                    _uiState.value = _uiState.value.copy(adherenceStats = stats)
-                },
-                onFailure = { /* non-critical */ }
-            )
-
-            // Load adherence history
-            val historyResult = adherenceRepository.getAdherenceHistory(patientId)
-            historyResult.fold(
-                onSuccess = { history ->
-                    _uiState.value = _uiState.value.copy(adherenceHistory = history)
-                },
-                onFailure = { /* non-critical */ }
-            )
-
-            // Load predictions
-            val predResult = predictionRepository.getPredictions(patientId)
-            predResult.fold(
-                onSuccess = { preds ->
-                    _uiState.value = _uiState.value.copy(predictions = preds)
-                },
-                onFailure = { /* non-critical */ }
-            )
 
             _uiState.value = _uiState.value.copy(isLoading = false)
         }

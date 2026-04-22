@@ -188,7 +188,10 @@ fun PatientDashboardScreen(
                             MedicationScheduleCard(
                                 scheduledMedication = scheduled,
                                 onTakeMedication = {
-                                    viewModel.takeMedication(scheduled.medication.id)
+                                    viewModel.takeMedication(
+                                        scheduled.medication.id,
+                                        scheduled.scheduledTime
+                                    )
                                 }
                             )
                         }

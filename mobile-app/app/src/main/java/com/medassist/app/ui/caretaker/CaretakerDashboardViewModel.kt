@@ -21,6 +21,7 @@ data class CaretakerDashboardUiState(
     val filteredPatients: List<Patient> = emptyList(),
     val searchQuery: String = "",
     val totalPatients: Int = 0,
+    val totalMedications: Int = 0,
     val averageAdherence: Double = 0.0,
     val highRiskCount: Int = 0,
     val error: String? = null,
@@ -47,28 +48,28 @@ class CaretakerDashboardViewModel @Inject constructor(
             _uiState.value = _uiState.value.copy(isLoading = true, error = null)
 
             try {
-                val response = apiService.getPatients()
-                if (response.isSuccessful) {
-                    val patients = response.body()?.results ?: emptyList()
-                    val avgAdherence = if (patients.isNotEmpty()) {
-                        patients.mapNotNull { it.adherenceRate }.average()
-                    } else 0.0
-                    val highRisk = patients.count { (it.adherenceRate ?: 0.0) < 50.0 }
-
+                val patientsResponse = apiService.getPatients()
+                val statsResponse = apiService.getCaretakerStats()
+                
+                if (patientsResponse.isSuccessful && statsResponse.isSuccessful) {
+                    val patients = patientsResponse.body() ?: emptyList()
+                    val stats = statsResponse.body()
+                    
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,
                         isRefreshing = false,
                         patients = patients,
                         filteredPatients = patients,
-                        totalPatients = patients.size,
-                        averageAdherence = avgAdherence,
-                        highRiskCount = highRisk
+                        totalPatients = stats?.totalPatients ?: 0,
+                        totalMedications = stats?.totalMedications ?: 0,
+                        averageAdherence = stats?.averageAdherence ?: 0.0,
+                        highRiskCount = stats?.highRiskCount ?: 0
                     )
                 } else {
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,
                         isRefreshing = false,
-                        error = "Failed to load patients: ${response.code()}"
+                        error = "Failed to load dashboard: ${patientsResponse.code()} / ${statsResponse.code()}"
                     )
                 }
             } catch (e: Exception) {

@@ -35,16 +35,16 @@ class MedicationListViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoading = true, error = null)
 
-            val patientId = tokenManager.getPatientId()
-            if (patientId <= 0) {
+            val userId = tokenManager.getUserId()
+            if (userId <= 0) {
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,
-                    error = "Patient ID not found. Please log in again."
+                    error = "User session invalid. Please log in again."
                 )
                 return@launch
             }
 
-            val result = medicationRepository.getMedications(patientId)
+            val result = medicationRepository.getMedications(userId)
 
             result.fold(
                 onSuccess = { medications ->

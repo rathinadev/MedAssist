@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { Upload, X, Loader2, FileImage } from "lucide-react";
+import { Upload, X, Loader2, FileImage, AlertTriangle as AlertIcon } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
@@ -166,6 +166,25 @@ export function PrescriptionScanner({
                 </Button>
               </div>
             </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {prescription && prescription.extracted_data?.medications?.length === 0 && (
+        <Card className="border-yellow-200 bg-yellow-50/50">
+          <CardContent className="flex flex-col items-center justify-center py-10 text-center">
+            <AlertIcon className="h-10 w-10 text-yellow-600 mb-3" />
+            <h3 className="text-lg font-semibold text-yellow-800">No Medications Found</h3>
+            <p className="max-w-md text-sm text-yellow-700/80">
+              We couldn&apos;t reliably extract any medications from this image. Please ensure the prescription is well-lit and all text is clearly visible, then try again.
+            </p>
+            <Button 
+              variant="outline" 
+              className="mt-4 border-yellow-200 hover:bg-yellow-100"
+              onClick={removeFile}
+            >
+              Try Another Photo
+            </Button>
           </CardContent>
         </Card>
       )}

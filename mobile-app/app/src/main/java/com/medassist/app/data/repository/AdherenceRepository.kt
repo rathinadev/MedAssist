@@ -15,14 +15,16 @@ class AdherenceRepository @Inject constructor(
     suspend fun logAdherence(
         medicationId: Int,
         status: String,
-        takenTime: String? = null
+        takenTime: String? = null,
+        scheduledTime: String? = null
     ): Result<AdherenceLog> = withContext(Dispatchers.IO) {
         try {
             val response = apiService.logAdherence(
                 AdherenceLogRequest(
                     medication = medicationId,
                     status = status,
-                    takenTime = takenTime
+                    takenTime = takenTime,
+                    scheduledTime = scheduledTime
                 )
             )
             if (response.isSuccessful) {

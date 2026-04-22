@@ -30,7 +30,12 @@ class RemoteAlertWorker(
 
     override suspend fun doWork(): Result = withContext(Dispatchers.IO) {
         try {
-            val token = TokenManager(applicationContext).getAccessToken() ?: return@withContext Result.failure()
+            val tokenManager = TokenManager(applicationContext)
+            val token = tokenManager.getAccessToken() ?: return@withContext Result.failure()
+            val role = tokenManager.getUserRole()
+            
+            // Caretakers don't have a single "reminders" context, so skip polling if not a patient
+            if (role != "patient") return@withContext Result.success()
             
             val client = OkHttpClient()
             val request = Request.Builder()
@@ -58,6 +63,16 @@ class RemoteAlertWorker(
         } catch (e: Exception) {
             Log.e("RemoteAlertWorker", "Error fetching reminders", e)
             Result.retry()
+        } finally {
+            // Schedule the next poll in 1 minute (Bypassing 15-min limit)
+            val nextRequest = androidx.work.OneTimeWorkRequestBuilder<RemoteAlertWorker>()
+                .setInitialDelay(1, java.util.concurrent.TimeUnit.MINUTES)
+                .build()
+            androidx.work.WorkManager.getInstance(applicationContext).enqueueUniqueWork(
+                "RemoteAlertSync",
+                androidx.work.ExistingWorkPolicy.REPLACE,
+                nextRequest
+            )
         }
     }
 

@@ -2,11 +2,6 @@ package com.medassist.app.data.model
 
 import com.google.gson.annotations.SerializedName
 
-data class PatientListResponse(
-    val count: Int,
-    val results: List<Patient>
-)
-
 data class Patient(
     val id: Int,
     val user: PatientUser,
@@ -50,4 +45,15 @@ data class AdherenceStats(
     val taken: Int,
     val missed: Int,
     val late: Int
+)
+
+data class CaretakerStatsResponse(
+    @SerializedName("total_patients")
+    val totalPatients: Int,
+    @SerializedName("total_medications")
+    val totalMedications: Int,
+    @SerializedName("average_adherence")
+    val averageAdherence: Double,
+    @SerializedName("high_risk_count")
+    val highRiskCount: Int
 )

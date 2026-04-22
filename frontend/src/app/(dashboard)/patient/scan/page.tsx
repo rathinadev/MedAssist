@@ -20,12 +20,18 @@ export default function PatientScanPage() {
   useEffect(() => {
     const fetchPatientProfile = async () => {
       try {
-        // Get the current user's patient profile
-        const res = await api.get("/patients/");
-        const patientsList = res.data.results || res.data;
         const userStr = localStorage.getItem("user");
         if (userStr) {
           const user = JSON.parse(userStr);
+          if (user.role?.toLowerCase() === "patient") {
+            setPatientId(user.id);
+            setIsLoading(false);
+            return;
+          }
+          
+          // Otherwise (for caretakers), we still check the profile list if needed
+          const res = await api.get("/patients/");
+          const patientsList = res.data.results || res.data;
           const myProfile = patientsList.find(
             (p: { user: { email: string } }) => p.user.email === user.email
           );
@@ -33,8 +39,8 @@ export default function PatientScanPage() {
             setPatientId(myProfile.user.id);
           }
         }
-      } catch {
-        // Patient profile not found
+      } catch (err) {
+        console.error("Error fetching patient ID:", err);
       } finally {
         setIsLoading(false);
       }

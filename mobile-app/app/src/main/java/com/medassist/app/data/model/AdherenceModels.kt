@@ -6,14 +6,14 @@ data class AdherenceLogRequest(
     val medication: Int,
     val status: String,
     @SerializedName("taken_time")
-    val takenTime: String? = null
+    val takenTime: String? = null,
+    @SerializedName("scheduled_time")
+    val scheduledTime: String? = null
 )
 
 data class AdherenceLog(
     val id: Int? = null,
-    val medication: Int,
-    @SerializedName("medication_name")
-    val medicationName: String? = null,
+    val medication: AdherenceMedication,
     val status: String,
     @SerializedName("taken_time")
     val takenTime: String? = null,
@@ -22,8 +22,18 @@ data class AdherenceLog(
     val date: String? = null
 )
 
+data class AdherenceMedication(
+    val id: Int,
+    val name: String,
+    val dosage: String
+)
+
 data class AdherenceHistoryResponse(
     val logs: List<AdherenceLog>,
+    val summary: AdherenceSummary
+)
+
+data class AdherenceSummary(
     val total: Int,
     val taken: Int,
     val missed: Int,

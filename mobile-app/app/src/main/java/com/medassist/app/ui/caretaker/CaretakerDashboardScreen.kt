@@ -91,35 +91,49 @@ fun CaretakerDashboardScreen(
                 ) {
                     // Summary cards
                     item {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            SummaryCard(
-                                title = "Total Patients",
-                                value = "${uiState.totalPatients}",
-                                icon = Icons.Default.People,
-                                color = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.weight(1f)
-                            )
-                            SummaryCard(
-                                title = "Avg Adherence",
-                                value = "${uiState.averageAdherence.toInt()}%",
-                                icon = Icons.Default.TrendingUp,
-                                color = when {
-                                    uiState.averageAdherence >= 80 -> Success
-                                    uiState.averageAdherence >= 50 -> Warning
-                                    else -> Error
-                                },
-                                modifier = Modifier.weight(1f)
-                            )
-                            SummaryCard(
-                                title = "High Risk",
-                                value = "${uiState.highRiskCount}",
-                                icon = Icons.Default.Warning,
-                                color = if (uiState.highRiskCount > 0) Error else Success,
-                                modifier = Modifier.weight(1f)
-                            )
+                        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                SummaryCard(
+                                    title = "Total Patients",
+                                    value = "${uiState.totalPatients}",
+                                    icon = Icons.Default.People,
+                                    color = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.weight(1f)
+                                )
+                                SummaryCard(
+                                    title = "Meds Managed",
+                                    value = "${uiState.totalMedications}",
+                                    icon = Icons.Default.Medication,
+                                    color = MaterialTheme.colorScheme.tertiary,
+                                    modifier = Modifier.weight(1f)
+                                )
+                            }
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                SummaryCard(
+                                    title = "Avg Adherence",
+                                    value = "${uiState.averageAdherence.toInt()}%",
+                                    icon = Icons.Default.TrendingUp,
+                                    color = when {
+                                        uiState.averageAdherence >= 80 -> Success
+                                        uiState.averageAdherence >= 50 -> Warning
+                                        else -> Error
+                                    },
+                                    modifier = Modifier.weight(1f)
+                                )
+                                SummaryCard(
+                                    title = "High Risk",
+                                    value = "${uiState.highRiskCount}",
+                                    icon = Icons.Default.Warning,
+                                    color = if (uiState.highRiskCount > 0) Error else Success,
+                                    modifier = Modifier.weight(1f)
+                                )
+                            }
                         }
                     }
 
