@@ -28,8 +28,8 @@ Uses **WorkManager** to perform background sync. It has been stabilized to suppo
 - It fetches remote adherence alerts even if the laptop is also active (Synchronized Alerts).
 - Triggers the local **Android Text-to-Speech (TTS)** engine for audible reminders.
 
-## 4. Prescription Scanning (Stabilized)
-Patients can now scan prescriptions without manual ID selection. The backend automatically resolves identity from the JWT token, ensuring a seamless one-tap experience.
+## 4. Prescription Scanning (Enhanced Review & Edit)
+Patients can now scan prescriptions using the on-device AI camera. The system features a **Review & Edit** flow allowing users to finalize names and timings before they are synced to the cloud schedule. Identity is automatically resolved via the JWT token.
 
 ## 5. Networking and Security
 
@@ -42,11 +42,11 @@ Patients can now scan prescriptions without manual ID selection. The backend aut
 - **`com.medassist.app.data.local`**: DAOs and Entity definitions for the Room database.
 - **`com.medassist.app.notifications`**: Management logic for system-level notifications and alarm scheduling.
 
-## 6. Setup
+## 6. Distribution & Setup
 
-1. Open in **Android Studio**.
-2. Update the `Constants.BASE_URL` with your local machine's IP address (e.g., `192.168.x.x`).
-3. Build and deploy to an Emulator or Physical Device (API Level 26+).
+1. **Production Deployment**: The app is pre-configured to point to the MedAssist Cloud at `3.110.178.65`.
+2. **Install APK**: Download and install the latest build from the **[`releases/`](../releases/)** folder.
+3. **Internal Build**: Open in **Android Studio** if you need to modify the `BASE_URL` in `build.gradle.kts`.
 
 ## 7. Technical Implementation Guides
 

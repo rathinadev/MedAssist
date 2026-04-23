@@ -52,7 +52,7 @@ graph TD
 - **Root**: `frontend/`
 - **Env Vars**: 
   - `NEXT_PUBLIC_API_URL`: `/api`
-  - `AWS_BACKEND_URL`: `http://[YOUR_AWS_IP]:8000`
+  - `AWS_BACKEND_URL`: `http://3.110.178.65:8000`
 
 ---
 
@@ -63,7 +63,7 @@ graph TD
 | **Backend** | API, ML Models, OCR, Notifications | [Backend README](./backend/README.md) |
 | **Frontend** | Patient/Caretaker Web Dashboards | [Frontend README](./frontend/README.md) |
 | **Zero-Domain Deployment** | Vercel Proxy Architecture Guide | [PROD_DEPLOYMENT.md](./docs/PROD_DEPLOYMENT.md) |
-| **Master Demo Guide** | Credentials, Passwords & Stabilization Fixes | [MASTER_DEMO_GUIDE.md](./MASTER_DEMO_GUIDE.md) |
+| **Master Demo Guide** | Credentials, Passwords & Stabilization Fixes | [PROJECT_DOCS.md](./PROJECT_DOCS.md) |
 
 ---
 
