@@ -33,6 +33,12 @@ pip install -r requirements.txt --quiet
 if [ ! -f ".env" ]; then
     echo "🔑 Configuring environment variables (copying .env.example)..."
     cp .env.example .env
+else
+    # Auto-Heal: Ensure we are using SQLite if Postgres isn't configured
+    if grep -q "DB_ENGINE=postgresql" .env; then
+        echo "🔧 Auto-Heal: Switching DB_ENGINE to sqlite3 in .env..."
+        sed -i 's/DB_ENGINE=postgresql/DB_ENGINE=sqlite3/g' .env
+    fi
 fi
 
 # 5. Database Synchronization
