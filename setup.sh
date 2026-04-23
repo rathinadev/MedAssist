@@ -3,6 +3,8 @@
 # 🏥 MedAssist: Master One-Command Setup Script 🚀
 # This script automates Environment Setup, Database Seeding, and Background Service Launch.
 
+set -e # Exit immediately if a command exits with a non-zero status
+
 echo "--- 🛠️ Starting MedAssist Master Setup ---"
 
 # 1. Project Navigation
@@ -15,13 +17,16 @@ fi
 
 # 2. Virtual Environment Setup
 echo "🌐 Setting up Python Virtual Environment..."
-if [ ! -d "venv" ]; then
-    python3 -m venv venv
+if ! python3 -m venv venv 2>/dev/null; then
+    echo "❌ Error: 'python3-venv' is missing on your system."
+    echo "👉 Please run: sudo apt update && sudo apt install python3-venv -y"
+    exit 1
 fi
 source venv/bin/activate
 
 # 3. Dependency Installation
 echo "📩 Installing Dependencies..."
+pip install --upgrade pip --quiet
 pip install -r requirements.txt --quiet
 
 # 4. Environment Configuration
