@@ -3,12 +3,11 @@ package com.medassist.app.ui.patient
 import android.Manifest
 import android.content.pm.PackageManager
 import android.net.Uri
-import android.os.Environment
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -209,31 +208,48 @@ fun ScanPrescriptionScreen(
                     )
                 }
 
-                items(uiState.extractedMedications) { medication ->
-                    ExtractedMedicationCard(medication = medication)
+                itemsIndexed(uiState.extractedMedications) { index, medication ->
+                    EditableMedicationCard(
+                        medication = medication,
+                        onUpdate = { updated -> viewModel.updateMedication(index, updated) },
+                        onDelete = { viewModel.removeMedication(index) }
+                    )
                 }
 
                 item {
                     Spacer(modifier = Modifier.height(8.dp))
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        OutlinedButton(
-                            onClick = { viewModel.resetState() },
-                            modifier = Modifier
-                                .weight(1f)
-                                .height(48.dp)
-                        ) {
-                            Text("Scan Another")
+                    
+                    val isSaving by viewModel.isSaving.collectAsState()
+                    
+                    if (isSaving) {
+                        Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                            CircularProgressIndicator()
                         }
-                        Button(
-                            onClick = { onNavigateBack() },
-                            modifier = Modifier
-                                .weight(1f)
-                                .height(48.dp)
+                    } else {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
-                            Text("Done")
+                            OutlinedButton(
+                                onClick = { viewModel.resetState() },
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .height(48.dp)
+                            ) {
+                                Text("Scan Another")
+                            }
+                            Button(
+                                onClick = { 
+                                    viewModel.saveAllMedications {
+                                        onNavigateBack()
+                                    }
+                                },
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .height(48.dp)
+                            ) {
+                                Text("Add to Schedule")
+                            }
                         }
                     }
                 }
@@ -344,7 +360,11 @@ fun ScanPrescriptionScreen(
 }
 
 @Composable
-private fun ExtractedMedicationCard(medication: ExtractedMedication) {
+private fun EditableMedicationCard(
+    medication: ExtractedMedication,
+    onUpdate: (ExtractedMedication) -> Unit,
+    onDelete: () -> Unit
+) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
@@ -354,65 +374,66 @@ private fun ExtractedMedicationCard(medication: ExtractedMedication) {
                 .fillMaxWidth()
                 .padding(16.dp)
         ) {
-            Text(
-                text = medication.name ?: "Unknown Medication",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "Edit Medication",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.primary
+                )
+                IconButton(onClick = onDelete, modifier = Modifier.size(24.dp)) {
+                    Icon(
+                        Icons.Default.Delete,
+                        contentDescription = "Remove",
+                        tint = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.size(18.dp)
+                    )
+                }
+            }
+
             Spacer(modifier = Modifier.height(8.dp))
 
-            medication.dosage?.let {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        Icons.Default.Science,
-                        contentDescription = null,
-                        modifier = Modifier.size(16.dp),
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(
-                        text = "Dosage: $it",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            }
+            // Name Field
+            OutlinedTextField(
+                value = medication.name ?: "",
+                onValueChange = { onUpdate(medication.copy(name = it)) },
+                label = { Text("Medication Name") },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true
+            )
 
-            medication.frequency?.let {
-                Spacer(modifier = Modifier.height(4.dp))
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        Icons.Default.Repeat,
-                        contentDescription = null,
-                        modifier = Modifier.size(16.dp),
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(
-                        text = "Frequency: $it",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            }
+            Spacer(modifier = Modifier.height(12.dp))
 
-            medication.instructions?.let {
-                Spacer(modifier = Modifier.height(4.dp))
-                Row(verticalAlignment = Alignment.Top) {
-                    Icon(
-                        Icons.Default.Info,
-                        contentDescription = null,
-                        modifier = Modifier.size(16.dp),
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(
-                        text = it,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                // Dosage Field
+                OutlinedTextField(
+                    value = medication.dosage ?: "",
+                    onValueChange = { onUpdate(medication.copy(dosage = it)) },
+                    label = { Text("Dosage") },
+                    modifier = Modifier.weight(1f),
+                    singleLine = true
+                )
+
+                // Frequency Field
+                OutlinedTextField(
+                    value = medication.frequency ?: "",
+                    onValueChange = { onUpdate(medication.copy(frequency = it)) },
+                    label = { Text("Frequency") },
+                    modifier = Modifier.weight(1f),
+                    placeholder = { Text("e.g. once_daily") },
+                    singleLine = true
+                )
             }
+            
+            Text(
+                text = "Valid: once_daily, twice_daily, thrice_daily",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+                modifier = Modifier.padding(top = 4.dp, start = 4.dp)
+            )
         }
     }
 }

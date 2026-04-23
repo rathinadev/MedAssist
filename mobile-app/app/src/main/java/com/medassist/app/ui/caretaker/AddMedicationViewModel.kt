@@ -45,7 +45,7 @@ class AddMedicationViewModel @Inject constructor(
                 frequency = frequency,
                 timings = timings,
                 instructions = instructions,
-                patient = patientId
+                patientId = patientId
             )
 
             val result = medicationRepository.createMedication(request)

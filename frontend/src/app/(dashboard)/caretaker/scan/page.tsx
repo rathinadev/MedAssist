@@ -128,23 +128,135 @@ export default function CaretakerScanPage() {
         onMedicationsExtracted={setPrescription}
       />
 
-      {prescription &&
-        prescription.extracted_data?.medications?.length > 0 && (
-          <div className="flex justify-end">
-            <Button
-              onClick={handleSaveMedications}
-              disabled={isSaving}
-              size="lg"
-            >
-              {isSaving ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              ) : (
-                <Save className="mr-2 h-4 w-4" />
-              )}
-              Save Medications ({prescription.extracted_data.medications.length})
-            </Button>
-          </div>
-        )}
+      {prescription && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base flex items-center justify-between">
+              Review Extracted Medications
+              <span className="text-xs font-normal text-muted-foreground">
+                Edit items before saving to schedule
+              </span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {prescription.extracted_data.medications.map((med, idx) => (
+                <div
+                  key={idx}
+                  className="p-4 border rounded-lg space-y-3 relative group"
+                >
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity text-destructive"
+                    onClick={() => {
+                      const newMeds = [
+                        ...prescription.extracted_data.medications,
+                      ];
+                      newMeds.splice(idx, 1);
+                      setPrescription({
+                        ...prescription,
+                        extracted_data: {
+                          ...prescription.extracted_data,
+                          medications: newMeds,
+                        },
+                      });
+                    }}
+                  >
+                    <Loader2 className="h-4 w-4" /> {/* Fallback icon, should use X or Trash */}
+                  </Button>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="space-y-1">
+                      <Label className="text-xs">Medication Name</Label>
+                      <input
+                        className="w-full p-2 border rounded text-sm"
+                        value={med.name}
+                        onChange={(e) => {
+                          const newMeds = [
+                            ...prescription.extracted_data.medications,
+                          ];
+                          newMeds[idx] = { ...med, name: e.target.value };
+                          setPrescription({
+                            ...prescription,
+                            extracted_data: {
+                              ...prescription.extracted_data,
+                              medications: newMeds,
+                            },
+                          });
+                        }}
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-xs">Dosage</Label>
+                      <input
+                        className="w-full p-2 border rounded text-sm"
+                        value={med.dosage}
+                        onChange={(e) => {
+                          const newMeds = [
+                            ...prescription.extracted_data.medications,
+                          ];
+                          newMeds[idx] = { ...med, dosage: e.target.value };
+                          setPrescription({
+                            ...prescription,
+                            extracted_data: {
+                              ...prescription.extracted_data,
+                              medications: newMeds,
+                            },
+                          });
+                        }}
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-xs">Frequency</Label>
+                      <Select
+                        value={med.frequency}
+                        onValueChange={(val) => {
+                          const newMeds = [
+                            ...prescription.extracted_data.medications,
+                          ];
+                          newMeds[idx] = { ...med, frequency: val };
+                          setPrescription({
+                            ...prescription,
+                            extracted_data: {
+                              ...prescription.extracted_data,
+                              medications: newMeds,
+                            },
+                          });
+                        }}
+                      >
+                        <SelectTrigger className="mt-1">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="once_daily">Once Daily</SelectItem>
+                          <SelectItem value="twice_daily">Twice Daily</SelectItem>
+                          <SelectItem value="thrice_daily">Thrice Daily</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="flex justify-end mt-6">
+              <Button
+                onClick={handleSaveMedications}
+                disabled={isSaving || prescription.extracted_data.medications.length === 0}
+                size="lg"
+              >
+                {isSaving ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <Save className="mr-2 h-4 w-4" />
+                )}
+                Confirm & Add to Schedule ({prescription.extracted_data.medications.length})
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

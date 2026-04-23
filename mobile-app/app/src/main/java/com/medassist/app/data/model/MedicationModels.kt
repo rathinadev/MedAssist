@@ -20,7 +20,8 @@ data class CreateMedicationRequest(
     val frequency: String,
     val timings: List<String>,
     val instructions: String?,
-    val patient: Int
+    @SerializedName("patient_id")
+    val patientId: Int
 )
 
 data class UpdateMedicationRequest(
