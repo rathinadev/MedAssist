@@ -51,9 +51,9 @@ python3 manage.py seed_demo_data
 
 # 7. Background Service Management (Using Linux Screens)
 echo "🧹 Cleaning up old sessions..."
-screen -S api -X quit > /dev/null 2>&1
-screen -S monitor -X quit > /dev/null 2>&1
-screen -wipe > /dev/null 2>&1
+screen -S api -X quit > /dev/null 2>&1 || true
+screen -S monitor -X quit > /dev/null 2>&1 || true
+screen -wipe > /dev/null 2>&1 || true
 
 echo "🚀 Spinning up Background Services..."
 
